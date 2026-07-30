@@ -1,0 +1,34 @@
+{
+  "evals": [
+    {
+      "name": "pr-number-review-flow",
+      "prompt": "Review Kubernetes Spanish translation PR 55868 in the local kubernetes website repo.",
+      "expected": "The skill treats 55868 as a pull request number, fetches the changed Spanish documentation files, maps each edited content/es path to its English source path, checks structural fidelity before wording, and returns a severity-ranked review report with a final verdict."
+    },
+    {
+      "name": "pr-url-review-flow",
+      "prompt": "Use k8s-es-docs-review on https://github.com/kubernetes/website/pull/55868.",
+      "expected": "The skill extracts the repository and PR number from the URL, reviews the PR as a Kubernetes website translation change, and reports findings grouped by file and severity."
+    },
+    {
+      "name": "english-source-mapping",
+      "prompt": "Compare content/es/training/_index.html against its English source.",
+      "expected": "The skill maps content/es/training/_index.html to content/en/training/_index.html, checks headings, paragraphs, lists, code blocks, and other meaning-bearing structure, and flags any missing or structurally divergent content."
+    },
+    {
+      "name": "language-and-tone-review",
+      "prompt": "Identify Spanish grammar, typo, and tone issues in this Kubernetes translation PR.",
+      "expected": "The skill checks grammar, spelling, punctuation, literal translation artifacts, terminology consistency, and tone against nearby Spanish Kubernetes docs or fallback Spanish documentation references when the section is new."
+    },
+    {
+      "name": "github-cli-fallback",
+      "prompt": "The local checkout does not have the PR branch. How should the skill fetch PR metadata and diff details?",
+      "expected": "The skill instructs the reviewer to use GitHub CLI commands such as gh auth status, gh repo set-default kubernetes/website, gh pr view, gh pr diff, gh pr view --comments, and gh pr checkout when local context is incomplete."
+    },
+    {
+      "name": "draft-review-comments",
+      "prompt": "Return comment-ready suggestions for a translation that is structurally correct but uses awkward literal Spanish.",
+      "expected": "The skill converts findings into short reviewer comments that explain the issue, distinguish translation accuracy from style, and suggest replacement wording or requested changes that can be pasted into GitHub."
+    }
+  ]
+}
