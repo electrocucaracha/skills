@@ -19,13 +19,13 @@ producing a single full Markdown report with detailed observations.
 
 ## Required Inputs
 
-| Input                           | Required | Default                                         |
-| ------------------------------- | -------- | ----------------------------------------------- |
-| PR number                       | yes      | —                                               |
-| Repository                      | no       | `https://github.com/kubernetes/website`         |
-| Base findings (previous review) | no       | none (first review)                             |
-| Output path                     | no       | `./reports/k8s-review-PR<number>-YYYY-MM-DD.md` |
-| Save findings path              | no       | none                                            |
+| Input | Required | Default |
+|-------|----------|---------|
+| PR number | yes | — |
+| Repository | no | `https://github.com/kubernetes/website` |
+| Base findings (previous review) | no | none (first review) |
+| Output path | no | `./reports/k8s-review-PR<number>-YYYY-MM-DD.md` |
+| Save findings path | no | none |
 
 ## Procedure
 
@@ -42,7 +42,6 @@ git checkout pr-branch
 ```
 
 Verify clone:
-
 ```bash
 echo "en: $(find content/en -name '*.md' | wc -l)"
 echo "es: $(find content/es -name '*.md' | wc -l)"
@@ -50,7 +49,6 @@ echo "es: $(find content/es -name '*.md' | wc -l)"
 
 Resolve the PR submitter's fork URL and head commit SHA for accurate file links in the report.
 Use the GitHub API; fall back to the local checkout SHA if the API is unavailable:
-
 ```bash
 # Preferred: resolve from GitHub API
 PR_JSON=$(curl -sf \
@@ -155,47 +153,41 @@ python3 scripts/review_pr.py \
 
 The follow-up report includes a **Seguimiento de sugerencias previas** section at the top with three groups:
 
-| Grupo        | Significado                                                                 |
-| ------------ | --------------------------------------------------------------------------- |
-| ✅ Aplicado  | Finding from the previous review that no longer appears in the current scan |
-| ⚠️ Pendiente | Finding from the previous review still detected in the current scan         |
-| 🆕 Nuevo     | New finding not present in the previous review                              |
+| Grupo | Significado |
+|-------|-------------|
+| ✅ Aplicado | Finding from the previous review that no longer appears in the current scan |
+| ⚠️ Pendiente | Finding from the previous review still detected in the current scan |
+| 🆕 Nuevo | New finding not present in the previous review |
 
 Matching logic: a previous finding is considered **resolved** when no current finding shares the same `(file, code)` pair within ±5 lines of the original. Line tolerance handles minor line-number shifts due to edits above the flagged area.
 
 ### Decision rule for verification
 
-| Outcome                        | Action                                   |
-| ------------------------------ | ---------------------------------------- |
-| All 🔴 Error findings resolved | PR is ready for technical approval       |
-| 🔴 Errors still Pendiente      | Request another revision                 |
-| Only 🟡/🔵 Pendiente           | Reviewer may approve at their discretion |
+| Outcome | Action |
+|---------|---------|
+| All 🔴 Error findings resolved | PR is ready for technical approval |
+| 🔴 Errors still Pendiente | Request another revision |
+| Only 🟡/🔵 Pendiente | Reviewer may approve at their discretion |
 
 ---
 
 ### Check 1 — Paragraph Alignment (`check_paragraphs.py`)
-
 Parses headings and paragraph blocks in both the ES file and its EN mirror.
 Flags:
-
 - Missing sections (present in EN, absent in ES)
 - Extra sections (present in ES, absent in EN)
 - Section content significantly shorter than EN (< 50% of EN paragraph count)
 - Heading text drift (EN heading not reflected accurately in ES)
 
 ### Check 2 — Internal Link Validation (`check_links.py`)
-
 Resolves all Markdown links `[text](target)` and Hugo shortcodes `{{< relref "..." >}}`.
 Flags:
-
 - Links targeting a `content/` path that does not exist in the repo
 - Anchor fragments `#section-id` that don't correspond to a heading in the target file
 - Links that point to English-only paths that have no Spanish equivalent (warn only)
 
 ### Check 3 — Writing Consistency (`check_style.py`)
-
 Checks run **only on prose lines** — the following are automatically excluded to avoid false positives:
-
 - YAML frontmatter (`---` block at the top of each file)
 - Fenced code blocks (` ``` ... ``` `)
 - HTML comments (`<!-- ... -->`)
@@ -204,7 +196,6 @@ Checks run **only on prose lines** — the following are automatically excluded 
 - Markdown table rows and separator lines (`| ... |`, `|---|`)
 
 Flags:
-
 - Untranslated English terms that the [k8s style guide](https://kubernetes.io/docs/contribute/style/style-guide/) requires to be translated or left as-is consistently
 - Register inconsistency (`tú`/`vosotros` vs `usted`/`ustedes` within the same file)
 - Terminology drift: `clúster` vs `cluster`, `contenedor` vs `container`, `nodo` vs `node`
@@ -216,9 +207,7 @@ Flags:
 Leading indentation, list nesting, and Markdown continuation spacing must not be flagged as typographic double-space errors.
 
 ### Check 4 — Kubernetes PR Review Guide
-
 Applies guidelines from [reviewing-prs.md](https://github.com/kubernetes/website/blob/main/content/en/docs/contribute/review/reviewing-prs.md):
-
 - Technical accuracy check (code blocks and command names unchanged from EN)
 - Frontmatter completeness (`title`, `description`, `weight`, `content_type`)
 - File encoding (UTF-8), line endings (LF)
@@ -229,24 +218,23 @@ Applies guidelines from [reviewing-prs.md](https://github.com/kubernetes/website
 ## Report Format
 
 The report is a Markdown file with:
-
 1. Header: PR number, date, reviewer, summary counts
 2. Per-file sections with a review table:
 
 ```markdown
 ### content/es/docs/concepts/example.md
 
-| Línea | Código     | Severidad     | Contexto                                                            | Comentario                                    | Sugerencia                                                       |
-| ----- | ---------- | ------------- | ------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
-| 12    | PARA-004   | 🔴 Error      | 10: párrafo anterior<br>11: contexto cercano<br>> 12: línea marcada | Sección "Overview" falta en la traducción ... | Añadir la sección faltante a partir del bloque EN de referencia. |
-| 34    | LINK-001   | 🟡 Aviso      | 32: párrafo anterior<br>33: enlace previo<br>> 34: línea marcada    | Enlace roto: `/docs/tasks/foo` no existe ...  | Corregir el destino o eliminar el enlace.                        |
-| 67    | STYLE-003a | 🔵 Sugerencia | 65: frase anterior<br>66: contexto cercano<br>> 67: línea marcada   | Usar "clúster" en lugar de "cluster" ...      | Sustituir "cluster" por "clúster" en esta línea.                 |
+| Línea | Código | Severidad | Contexto | Comentario | Sugerencia |
+|-------|--------|-----------|----------|------------|------------|
+| 12    | PARA-004 | 🔴 Error | 10: párrafo anterior<br>11: contexto cercano<br>> 12: línea marcada | Sección "Overview" falta en la traducción ... | Añadir la sección faltante a partir del bloque EN de referencia. |
+| 34    | LINK-001 | 🟡 Aviso | 32: párrafo anterior<br>33: enlace previo<br>> 34: línea marcada | Enlace roto: `/docs/tasks/foo` no existe ... | Corregir el destino o eliminar el enlace. |
+| 67    | STYLE-003a | 🔵 Sugerencia | 65: frase anterior<br>66: contexto cercano<br>> 67: línea marcada | Usar "clúster" en lugar de "cluster" ... | Sustituir "cluster" por "clúster" en esta línea. |
 ```
 
 3. Summary checklist for the submitter
 
 4. **Resumen enumerado de observaciones** (ordered by severity and volume),
-   with one numbered item per finding category to prioritize fixes quickly.
+with one numbered item per finding category to prioritize fixes quickly.
 
 Each finding should include enough local context to act on it directly:
 
@@ -262,7 +250,6 @@ and require the same fix.
 The grouped row should show the affected line range and preserve nearby context.
 
 Severities:
-
 - 🔴 **Error** — must fix before merge (missing sections, broken links, conflict markers)
 - 🟡 **Aviso** — should fix (untranslated text blocks, register inconsistency)
 - 🔵 **Sugerencia** — optional improvement (style, terminology preference)
@@ -271,10 +258,10 @@ Severities:
 
 ## Decision Rules
 
-| Situation                           | Action                                              |
-| ----------------------------------- | --------------------------------------------------- |
+| Situation | Action |
+|-----------|--------|
 | `git clone` fails (network blocked) | Stop; tell user to clone manually and pass `--repo` |
-| PR has no `content/es/` changes     | Report it and exit cleanly                          |
-| EN counterpart missing              | Flag as 🔴 Error (orphan ES file)                   |
-| Script fails on a single file       | Continue; record the error in the report            |
-| PR targets a non-`main` base branch | Warn; compare against that branch instead           |
+| PR has no `content/es/` changes | Report it and exit cleanly |
+| EN counterpart missing | Flag as 🔴 Error (orphan ES file) |
+| Script fails on a single file | Continue; record the error in the report |
+| PR targets a non-`main` base branch | Warn; compare against that branch instead |
