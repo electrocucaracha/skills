@@ -1,4 +1,3 @@
----
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2026
@@ -36,7 +35,7 @@ repos:
       - id: markdownlint
         files: \.(md|mdown|markdown)$
   - repo: https://github.com/electrocucaracha/ai-prepare-commit-msg
-    rev: v15.2.2
+    rev: v15.4.2
     hooks:
       - id: ai-prepare-commit
         stages:
