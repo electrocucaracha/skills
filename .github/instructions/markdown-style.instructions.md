@@ -33,8 +33,8 @@ Lines may exceed 80 characters to accommodate hyperlinks, code spans, or other m
 ## Lists
 
 Add a semantic line break before every list.
-Group related items without blank lines between them.
-Use a blank line to separate logically distinct groups within a list.
+Group related items without empty lines between them.
+Use a empty line to separate logically distinct groups within a list.
 
 ## Code Blocks
 

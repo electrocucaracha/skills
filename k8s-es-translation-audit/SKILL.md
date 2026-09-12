@@ -81,8 +81,8 @@ The script writes a single JSON file with all findings.
 
 | JSON key         | Contents                                                                          |
 | ---------------- | --------------------------------------------------------------------------------- |
-| `en_total`       | total English markdown files in scope                                             |
-| `es_total`       | total Spanish markdown files in scope                                             |
+| `en_total`       | total English Markdown files in scope                                             |
+| `es_total`       | total Spanish Markdown files in scope                                             |
 | `paired`         | count of files that exist in both languages                                       |
 | `missing_in_es`  | sorted list of English-only paths                                                 |
 | `orphan_in_es`   | sorted list of Spanish-only paths                                                 |
@@ -104,7 +104,7 @@ The script writes a single JSON file with all findings.
 
 3. **Traffic scoring** — every finding is assigned a priority score:
 
-   ```
+   ```text
    score = (tier × 10,000 + hugo_weight) − (min(cross_lang, 8) × 200) − max(0, 500 − file_lines)
    ```
 
@@ -138,7 +138,7 @@ The report is written to `./reports/` by default. Print the path to the user.
 
 **Report sections (always present):**
 
-1. Metadata (date, repo, scope, strictness, traffic-signal description)
+1. Metadata (date, repository, scope, strictness, traffic-signal description)
 2. Priority Score Methodology (formula, section-tier table, GA4 upgrade path)
 3. Summary counts
 4. Traffic-prioritized top-50 missing translations (table with score, tier, weight, xlang, lines)
