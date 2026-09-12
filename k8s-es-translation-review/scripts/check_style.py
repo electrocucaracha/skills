@@ -3,8 +3,6 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "asyncclick",
-#     "mcp[cli]>=1.8.0",
 #     "pyspellchecker>=0.8.2",
 # ]
 # ///
@@ -32,12 +30,14 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-CONTEXT_RADIUS = 2
+from context import context_window
+
 STYLE_DICTIONARY_PATH = Path(__file__).with_name("check_style_dictionary.json")
 
 
 @lru_cache(maxsize=1)
 def _load_style_dictionary() -> dict:
+    """Load the shared terminology and spellcheck configuration."""
     return json.loads(STYLE_DICTIONARY_PATH.read_text(encoding="utf-8"))
 
 
@@ -45,6 +45,7 @@ STYLE_DICTIONARY = _load_style_dictionary()
 
 
 def _load_terminology_rules() -> list[tuple[str, list[str], str, str]]:
+    """Convert configured terminology entries into typed rule tuples."""
     return [
         (
             item["canonical"],
@@ -56,30 +57,22 @@ def _load_terminology_rules() -> list[tuple[str, list[str], str, str]]:
     ]
 
 
-def context_window(prose_lines: list[tuple[int, str]], line_no: int) -> dict:
-    entries = list(prose_lines)
-    positions = {ln: idx for idx, (ln, _) in enumerate(entries)}
-    idx = positions.get(line_no)
-    if idx is None:
-        return {"context_before": [], "context_after": []}
-    start = max(0, idx - CONTEXT_RADIUS)
-    end = min(len(entries), idx + CONTEXT_RADIUS + 1)
-    before = [
-        {"line": ln, "text": text.rstrip()}
-        for ln, text in entries[start:idx]
-    ]
-    after = [
-        {"line": ln, "text": text.rstrip()}
-        for ln, text in entries[idx + 1 : end]
-    ]
-    return {"context_before": before, "context_after": after}
-
 TERMINOLOGY_RULES: list[tuple[str, list[str], str, str]] = _load_terminology_rules()
 KEEP_AS_ENGLISH = frozenset(
     token.lower() for token in STYLE_DICTIONARY["keep_as_english"]
 )
 
+_MARKDOWN_LINK_TARGET = re.compile(r"\]\([^)]*\)")
+
+
+def _strip_link_targets(line: str) -> str:
+    """Drop markdown link destinations so URL slugs (e.g. administer-cluster) aren't
+    mistaken for prose usage of a term."""
+    return _MARKDOWN_LINK_TARGET.sub("]", line)
+
+
 def _build_word_regex(words: list[str]) -> re.Pattern:
+    """Build a case-insensitive word-boundary regex from a word list."""
     return re.compile(
         r"\b(?:" + "|".join(re.escape(word) for word in words) + r")\b",
         re.IGNORECASE,
@@ -88,6 +81,7 @@ def _build_word_regex(words: list[str]) -> re.Pattern:
 
 TU_IMPERATIVES = _build_word_regex(STYLE_DICTIONARY["tu_imperatives"])
 USTED_IMPERATIVES = _build_word_regex(STYLE_DICTIONARY["usted_imperatives"])
+_REGISTER_PREFIX = re.compile(r"(?:^|[.!?:;,]\s+|\busted\s+)$", re.IGNORECASE)
 
 # Common Spanish words used to disqualify a phrase from being "English"
 _ES_STOPWORDS = frozenset(token.lower() for token in STYLE_DICTIONARY["es_stopwords"])
@@ -101,6 +95,7 @@ _ENGLISH_FALSE_POSITIVE_TOKENS = frozenset(
 
 
 def _tokenize_terms(text: str) -> set[str]:
+    """Extract normalized word tokens from text."""
     return {token.lower() for token in re.findall(r"[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*", text)}
 
 
@@ -121,6 +116,7 @@ def _tokenize_domain_terms(text: str) -> set[str]:
 
 
 def _extract_non_prose_terms(text: str) -> set[str]:
+    """Collect technical terms that should be excluded from spellchecking."""
     terms: set[str] = set()
 
     # Frontmatter and headings often contain product names or document nouns.
@@ -145,6 +141,7 @@ def _extract_non_prose_terms(text: str) -> set[str]:
 
 
 def _build_spellcheck_allowlist(*texts: str) -> frozenset[str]:
+    """Build the spellchecker allowlist from config and document terms."""
     words: set[str] = set()
     words.update(KEEP_AS_ENGLISH)
     words.update(_ENGLISH_FALSE_POSITIVE_TOKENS)
@@ -162,12 +159,14 @@ def _build_spellcheck_allowlist(*texts: str) -> frozenset[str]:
 
 
 def _get_spellchecker():
+    """Create the optional Spanish spellchecker when its dependency is available."""
     try:
         from spellchecker import SpellChecker
     except ImportError:
         return None
 
     return SpellChecker(language="es")
+
 
 # 4+ consecutive words with no Spanish markers — flag as possibly untranslated
 _ENGLISH_WORD = r"[a-zA-Z]{3,}"
@@ -191,7 +190,9 @@ def _looks_english(phrase: str) -> bool:
     if not meaningful_tokens:
         return False
 
-    english_hits = sum(1 for token in meaningful_tokens if token in _COMMON_ENGLISH_WORDS)
+    english_hits = sum(
+        1 for token in meaningful_tokens if token in _COMMON_ENGLISH_WORDS
+    )
     required_hits = max(2, math.ceil(len(meaningful_tokens) * 0.4))
     return english_hits >= required_hits
 
@@ -200,10 +201,12 @@ _SPELLCHECK_TOKEN = re.compile(r"[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*")
 
 
 def _in_inline_code(line: str, start_index: int) -> bool:
+    """Return whether an offset is inside inline Markdown code."""
     return line[:start_index].count("`") % 2 == 1
 
 
 def _build_spellcheck_checker(*texts: str):
+    """Create and configure a spellchecker for supplied documents."""
     checker = _get_spellchecker()
     if checker is None:
         return None, frozenset()
@@ -216,6 +219,7 @@ def _build_spellcheck_checker(*texts: str):
 def _check_spellchecker_line(
     line: str, checker, allowlist: frozenset[str]
 ) -> list[str]:
+    """Return unknown Spanish prose tokens from one line."""
     if checker is None:
         return []
 
@@ -252,7 +256,11 @@ _MISSING_ACCENT: list[tuple[re.Pattern, str, str]] = [
     (re.compile(r"\bpara\b"), "", ""),  # skip
     (re.compile(r"\bademas\b"), "además", "STYLE-004e"),
     (re.compile(r"\btambien\b"), "también", "STYLE-004f"),
-    (re.compile(r'\bsolo\b(?!\s*["\'])'), "", ""),  # skip: modern usage makes this low-signal
+    (
+        re.compile(r'\bsolo\b(?!\s*["\'])'),
+        "",
+        "",
+    ),  # skip: modern usage makes this low-signal
 ]
 
 
@@ -269,7 +277,6 @@ def strip_code_blocks(text: str) -> list[tuple[int, str]]:
     in_code = False
     in_frontmatter = False
     in_html_comment = False
-    frontmatter_done = False
 
     for i, line in enumerate(lines, 1):
         stripped = line.strip()
@@ -283,7 +290,6 @@ def strip_code_blocks(text: str) -> list[tuple[int, str]]:
             result.append((i, ""))
             if stripped == "---":
                 in_frontmatter = False
-                frontmatter_done = True
             continue
 
         # ── HTML comments <!-- ... --> (can span multiple lines) ─────────────
@@ -341,17 +347,17 @@ def extract_code_blocks(text: str) -> list[tuple[int, str]]:
 
 
 def _is_prose_continuation_candidate(line: str) -> bool:
+    """Return whether a line can continue a wrapped prose paragraph."""
     stripped = line.strip()
     if not stripped:
         return False
     if stripped.startswith(("#", "- ", "* ", ">", "|")):
         return False
-    if re.match(r"^\d+\.\s", stripped):
-        return False
-    return True
+    return not re.match(r"^\d+\.\s", stripped)
 
 
 def _normalize_prose_line(line: str) -> str:
+    """Collapse whitespace in a prose line for comparison."""
     normalized = re.sub(r"\s+", " ", line.strip())
     return normalized
 
@@ -383,13 +389,14 @@ def build_en_wrapped_compaction_map(
 
 
 def check_register(prose_lines: list[tuple[int, str]], es_rel: str) -> list[dict]:
+    """Find inconsistent tú and usted register in a Spanish document."""
     findings = []
     tu_lines: list[tuple[int, str]] = []
     usted_lines: list[tuple[int, str]] = []
     for line_no, line in prose_lines:
-        if TU_IMPERATIVES.search(line):
+        if _has_direct_register_instruction(line, TU_IMPERATIVES):
             tu_lines.append((line_no, line.rstrip()))
-        if USTED_IMPERATIVES.search(line):
+        if _has_direct_register_instruction(line, USTED_IMPERATIVES):
             usted_lines.append((line_no, line.rstrip()))
 
     if tu_lines and usted_lines:
@@ -433,7 +440,18 @@ def check_register(prose_lines: list[tuple[int, str]], es_rel: str) -> list[dict
     return findings
 
 
+def _has_direct_register_instruction(line: str, pattern: re.Pattern) -> bool:
+    """Return whether a line directly instructs the reader using a register."""
+    for match in pattern.finditer(line):
+        prefix = line[: match.start()]
+        prefix = re.sub(r"^\s*(?:[-*+]\s+|>\s+)", "", prefix)
+        if _REGISTER_PREFIX.search(prefix):
+            return True
+    return False
+
+
 def check_terminology(prose_lines: list[tuple[int, str]], es_rel: str) -> list[dict]:
+    """Find configured terminology variants in Spanish prose."""
     findings = []
     # Track which variant has been used per term to detect inconsistency
     term_occurrences: dict[str, list[tuple[int, str]]] = {}
@@ -451,10 +469,11 @@ def check_terminology(prose_lines: list[tuple[int, str]], es_rel: str) -> list[d
         term_occurrences[key] = []
 
         for line_no, line in prose_lines:
-            if canonical_pat.search(line):
+            search_line = _strip_link_targets(line)
+            if canonical_pat.search(search_line):
                 term_occurrences[key].append((line_no, "canonical"))
             for variant, pat in variant_pats:
-                if pat.search(line):
+                if pat.search(search_line):
                     term_occurrences[key].append((line_no, variant))
 
         seen = term_occurrences[key]
@@ -507,6 +526,7 @@ def check_terminology(prose_lines: list[tuple[int, str]], es_rel: str) -> list[d
 def check_untranslated_phrases(
     prose_lines: list[tuple[int, str]], es_rel: str
 ) -> list[dict]:
+    """Find likely untranslated English phrases in Spanish prose."""
     findings = []
     seen_spans: set[tuple[int, str]] = set()
     for line_no, line in prose_lines:
@@ -555,6 +575,7 @@ def check_typography(
     en_prose_lines: list[tuple[int, str]] | None = None,
     en_rel: str | None = None,
 ) -> list[dict]:
+    """Find common spacing and accent errors in Spanish prose."""
     findings = []
     en_compaction_map = (
         build_en_wrapped_compaction_map(en_prose_lines) if en_prose_lines else {}
@@ -643,6 +664,7 @@ def check_spellchecker(
     checker,
     allowlist: frozenset[str],
 ) -> list[dict]:
+    """Find unknown prose words using the optional Spanish spellchecker."""
     findings = []
     seen_lines: set[int] = set()
 
@@ -720,7 +742,7 @@ def check_code_blocks_unchanged(
                 if similar and stripped not in en_commands:
                     ref_line = None
                     verb = stripped.split()[0]
-                    if verb in en_commands_by_verb and en_commands_by_verb[verb]:
+                    if en_commands_by_verb.get(verb):
                         ref_line = en_commands_by_verb[verb][0][0]
                     # Possibly modified — warn
                     findings.append(
@@ -743,6 +765,7 @@ def check_code_blocks_unchanged(
 
 
 def check_file(es_rel: str, repo: Path) -> tuple[list[dict], str | None]:
+    """Run all style checks for one Spanish Markdown file."""
     es_path = repo / es_rel
     if not es_path.exists():
         return [], f"File not found: {es_rel}"
@@ -753,13 +776,12 @@ def check_file(es_rel: str, repo: Path) -> tuple[list[dict], str | None]:
     en_rel = es_rel.replace("content/es/", "content/en/", 1)
     en_path = repo / en_rel
     en_prose_lines: list[tuple[int, str]] = []
+    en_text = ""
     if en_path.exists():
         en_text = en_path.read_text(encoding="utf-8", errors="replace")
         en_prose_lines = strip_code_blocks(en_text)
 
-    spellchecker, allowlist = _build_spellcheck_checker(
-        es_text, en_text if en_path.exists() else ""
-    )
+    spellchecker, allowlist = _build_spellcheck_checker(text, en_text)
 
     try:
         findings += check_register(prose_lines, es_rel)
@@ -774,13 +796,14 @@ def check_file(es_rel: str, repo: Path) -> tuple[list[dict], str | None]:
         findings += check_spellchecker(prose_lines, es_rel, spellchecker, allowlist)
 
         findings += check_code_blocks_unchanged(es_path, en_path, es_rel)
-    except Exception as exc:
+    except (OSError, ValueError, KeyError, TypeError) as exc:
         return findings, str(exc)
 
     return findings, None
 
 
 def main() -> None:
+    """Parse command-line arguments and write style findings as JSON."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--files", required=True)
