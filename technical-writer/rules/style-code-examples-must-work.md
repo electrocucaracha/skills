@@ -8,7 +8,7 @@ Writing Style
 ## Why It Matters
 
 A broken code example destroys trust faster than any other documentation failure.
-Developers copy-paste from docs and expect it to work.
+Developers copypaste from docs and expect it to work.
 When it doesn't, they question everything else in the documentation.
 Stripe, Twilio,
 and AWS all test their code examples in CI —

@@ -119,7 +119,7 @@ Documentation changes go through the same PR process as code.
 This creates audit trails, enables collaboration,
 and prevents conflicting edits.
 
-**Co-locate docs with code when practical.** API reference and SDK docs often live best alongside the code they describe.
+**Colocatee docs with code when practical.** API reference and SDK docs often live best alongside the code they describe.
 Conceptual docs and tutorials may live in a dedicated docs repository.
 
 **Automate quality checks.** Use CI to validate:
@@ -194,7 +194,7 @@ For v2, see [here]."
 Preview → Current → Supported → Deprecated → Archived
 ```
 
-- **Preview**: Pre-release documentation, clearly labeled as draft
+- **Preview**: prerelease documentation, clearly labeled as draft
 - **Current**: The latest stable version, default for new users
 - **Supported**: Previous versions still receiving security updates
 - **Deprecated**: No longer supported, with migration guidance
@@ -256,13 +256,13 @@ and constraints.
 
 ### What Partners Need Beyond Standard Docs
 
-1.  **Certification/partnership tiers**: What technical requirements must they meet?
-2.  **Sandbox/testing environment**: How to test integrations without affecting production
-3.  **Partner-specific APIs**: Endpoints or features only available to partners
-4.  **Co-branding guidelines**: How to reference your product in their materials
-5.  **Support escalation**: How to get technical support as a partner
-6.  **SLAs and commitments**: What you guarantee about API stability and uptime
-7.  **Marketplace/listing requirements**: If you have an app marketplace
+1. **Certification/partnership tiers**: What technical requirements must they meet?
+2. **Sandbox/testing environment**: How to test integrations without affecting production
+3. **Partner-specific APIs**: Endpoints or features only available to partners
+4. **Co-branding guidelines**: How to reference your product in their materials
+5. **Support escalation**: How to get technical support as a partner
+6. **SLAs and commitments**: What you guarantee about API stability and uptime
+7. **Marketplace/listing requirements**: If you have an app marketplace
 
 ### Partner Documentation Structure
 
@@ -329,7 +329,7 @@ Minimum viable documentation.
 
 **Content checklist:**
 
-- [ ] README with project description and purpose
+- [ ] Readme with project description and purpose
 - [ ] Installation/setup instructions
 - [ ] At least one usage example
 - [ ] License information
@@ -455,7 +455,7 @@ Using the Content Types table from the main skill, identify:
 ### Step 4: Prioritize
 
 Use the adoption funnel to prioritize.
-Fix gaps that block adoption before filling in nice-to-have content:
+Fix gaps that block adoption before filling in nice to have content:
 
 1. Can users find and install the product? (Getting started)
 2. Can users complete the most common tasks? (How-to guides)

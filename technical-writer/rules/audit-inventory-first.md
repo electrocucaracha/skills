@@ -32,7 +32,7 @@ Create a spreadsheet with one row per documentation page:
 ## What People Get Wrong
 
 - **Skipping the inventory** — jumping straight to "let's rewrite everything" without understanding what exists
-- **Inventorying only official docs** — missing README files, wiki pages, blog posts, support articles, and internal docs that developers actually read
+- **Inventorying only official docs** — missing readme files, wiki pages, blog posts, support articles, and internal docs that developers actually read
 - **Not recording ownership** — unowned docs are the first to become stale
 
 ## When to Do This

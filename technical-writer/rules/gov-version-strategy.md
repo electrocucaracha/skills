@@ -31,7 +31,7 @@ version documentation that describes versioned behavior, don't version documenta
 Preview → Current → Supported → Deprecated → Archived
 ```
 
-- **Preview**: Pre-release docs, labeled as draft, may change
+- **Preview**: prerelease docs, labeled as draft, may change
 - **Current**: Latest stable version, default for all users
 - **Supported**: Previous versions still receiving security updates
 - **Deprecated**: End-of-life, link prominently to migration guide

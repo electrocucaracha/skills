@@ -8,39 +8,39 @@ the body holds prose the agent reads at plan time.
 
 ### Required
 
-| Field             | Type   | Notes                                                        |
-| ----------------- | ------ | ------------------------------------------------------------ |
-| `id`              | string | `<level>-<stage-abbr>-<failure-class>-<slug>`, lowercase      |
-| `level`           | enum   | `L1`, `L2`, `L3`                                             |
-| `stage`           | enum   | `localization`, `planning`, `execution-verification`          |
-| `failure_class`   | string | Controlled vocabulary term, see `taxonomy.md` in memory       |
-| `title`           | string | One line, imperative                                          |
-| `intent`          | string | What this node accomplishes, one sentence                     |
-| `applicable_when` | list   | Observable signals that must hold                             |
-| `key_actions`     | list   | Ordered, executable at `L1`, procedural at `L2`/`L3`          |
-| `verification`    | list   | How to prove the action worked                                |
-| `pitfalls`        | list   | Dead ends and false signals seen during the original repair   |
-| `portability`     | map    | See below                                                     |
-| `evidence`        | map    | See below                                                     |
-| `retrieval_keys`  | map    | See below                                                     |
+| Field             | Type   | Notes                                                       |
+| ----------------- | ------ | ----------------------------------------------------------- |
+| `id`              | string | `<level>-<stage-abbr>-<failure-class>-<slug>`, lowercase    |
+| `level`           | enum   | `L1`, `L2`, `L3`                                            |
+| `stage`           | enum   | `localization`, `planning`, `execution-verification`        |
+| `failure_class`   | string | Controlled vocabulary term, see `taxonomy.md` in memory     |
+| `title`           | string | One line, imperative                                        |
+| `intent`          | string | What this node accomplishes, one sentence                   |
+| `applicable_when` | list   | Observable signals that must hold                           |
+| `key_actions`     | list   | Ordered, executable at `L1`, procedural at `L2`/`L3`        |
+| `verification`    | list   | How to prove the action worked                              |
+| `pitfalls`        | list   | Dead ends and false signals seen during the original repair |
+| `portability`     | map    | See below                                                   |
+| `evidence`        | map    | See below                                                   |
+| `retrieval_keys`  | map    | See below                                                   |
 
 ### Optional
 
-| Field      | Type | Notes                                       |
-| ---------- | ---- | ------------------------------------------- |
-| `parent`   | id   | Node one level above                        |
-| `children` | list | Node IDs one level below                    |
-| `supersedes` | list | Node IDs this node replaces               |
+| Field        | Type | Notes                       |
+| ------------ | ---- | --------------------------- |
+| `parent`     | ID   | Node one level above        |
+| `children`   | list | Node IDs one level below    |
+| `supersedes` | list | Node IDs this node replaces |
 
 ### `portability`
 
-| Key           | Type | Notes                                                        |
-| ------------- | ---- | ------------------------------------------------------------ |
-| `languages`   | list | `["shell", "go"]` or `["*"]` when language-independent        |
-| `ecosystems`  | list | `["github-actions", "maven", "npm"]` or `["*"]`               |
-| `tools`       | list | Concrete tools the actions invoke                             |
-| `repo_shape`  | list | `monorepo`, `polyrepo`, `library`, `service`, `infra`, `docs` |
-| `transfer`    | enum | `repo-specific`, `project-agnostic`, `universal`              |
+| Key          | Type | Notes                                                         |
+| ------------ | ---- | ------------------------------------------------------------- |
+| `languages`  | list | `["shell", "go"]` or `["*"]` when language-independent        |
+| `ecosystems` | list | `["github-actions", "maven", "npm"]` or `["*"]`               |
+| `tools`      | list | Concrete tools the actions invoke                             |
+| `repo_shape` | list | `monorepo`, `polyrepo`, `library`, `service`, `infra`, `docs` |
+| `transfer`   | enum | `repo-specific`, `project-agnostic`, `universal`              |
 
 `transfer` must align with `level`:
 `L1` is `repo-specific`,
@@ -53,22 +53,22 @@ the node is really an `L2`.
 
 ### `evidence`
 
-| Key               | Type   | Notes                                                  |
-| ----------------- | ------ | ------------------------------------------------------ |
-| `source_trajectories` | list | Trajectory IDs this node was abstracted from       |
-| `repos`           | list   | `owner/name` where the knowledge was confirmed          |
-| `outcome`         | enum   | `verified`, `partial`, `unverified`, `refuted`          |
-| `verified_count`  | int    | Times a retrieved plan using this node succeeded        |
-| `refuted_count`   | int    | Times it misled a repair                                |
-| `last_verified`   | date   | `YYYY-MM-DD`                                            |
+| Key                   | Type | Notes                                            |
+| --------------------- | ---- | ------------------------------------------------ |
+| `source_trajectories` | list | Trajectory IDs this node was abstracted from     |
+| `repos`               | list | `owner/name` where the knowledge was confirmed   |
+| `outcome`             | enum | `verified`, `partial`, `unverified`, `refuted`   |
+| `verified_count`      | int  | Times a retrieved plan using this node succeeded |
+| `refuted_count`       | int  | Times it misled a repair                         |
+| `last_verified`       | date | `YYYY-MM-DD`                                     |
 
 ### `retrieval_keys`
 
-| Key                | Type | Notes                                                   |
-| ------------------ | ---- | ------------------------------------------------------- |
-| `symptoms`         | list | What a human observes                                    |
-| `error_signatures` | list | Literal strings or regexes seen in logs                  |
-| `keywords`         | list | Free-text synonyms for lexical matching                  |
+| Key                | Type | Notes                                   |
+| ------------------ | ---- | --------------------------------------- |
+| `symptoms`         | list | What a human observes                   |
+| `error_signatures` | list | Literal strings or regexes seen in logs |
+| `keywords`         | list | Free-text synonyms for lexical matching |
 
 ## Body Sections
 
@@ -136,6 +136,7 @@ parent: l2-loc-metric-miscount-validate-denominator
 ---
 
 ## Context
+
 ...
 ```
 
@@ -192,5 +193,5 @@ Reject these on sight:
 - `title: Fix the linter` — names no class of problem.
 - `key_actions: ["Investigate the root cause"]` — changes no behavior.
 - Missing `portability` — will be retrieved for incompatible stacks.
-- `L3` node naming a file, tool, or repo — it is an `L2` in disguise.
+- `L3` node naming a file, tool, or repository — it is an `L2` in disguise.
 - A node whose only evidence is one unverified attempt promoted above `L1`.

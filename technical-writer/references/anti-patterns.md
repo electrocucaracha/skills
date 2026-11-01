@@ -1,4 +1,4 @@
-# Documentation Anti-Patterns
+# Documentation antipatterns
 
 A consolidated checklist of documentation smells —
 common mistakes that reduce documentation quality, adoption,
@@ -7,16 +7,16 @@ Use this as a review checklist before publishing.
 
 ## Table of Contents
 
-1. [Structural Anti-Patterns](#structural-anti-patterns)
-2. [Content Anti-Patterns](#content-anti-patterns)
-3. [Style Anti-Patterns](#style-anti-patterns)
-4. [Developer Experience Anti-Patterns](#developer-experience-anti-patterns)
-5. [Governance Anti-Patterns](#governance-anti-patterns)
-6. [Partner Documentation Anti-Patterns](#partner-documentation-anti-patterns)
+1. [Structural antipatterns](#structural-anti-patterns)
+2. [Content antipatterns](#content-anti-patterns)
+3. [Style antipatterns](#style-anti-patterns)
+4. [Developer Experience antipatterns](#developer-experience-anti-patterns)
+5. [Governance antipatterns](#governance-anti-patterns)
+6. [Partner Documentation antipatterns](#partner-documentation-anti-patterns)
 
 ---
 
-## Structural Anti-Patterns
+## Structural antipatterns
 
 ### The Empty Scaffold
 
@@ -67,7 +67,7 @@ Organize how-to guides and tutorials by outcome ("Accept a payment", "Export mon
 
 ---
 
-## Content Anti-Patterns
+## Content antipatterns
 
 ### The Lecture Tutorial
 
@@ -147,7 +147,7 @@ Describe what they'll _build_, not what they'll _learn_:
 
 ---
 
-## Style Anti-Patterns
+## Style antipatterns
 
 ### The Passive Maze
 
@@ -225,7 +225,7 @@ Test examples in CI.
 
 ---
 
-## Developer Experience Anti-Patterns
+## Developer Experience antipatterns
 
 ### The 20-Minute Quickstart
 
@@ -261,7 +261,7 @@ Architecture and philosophy belong in explanation docs, linked from the quicksta
 
 ---
 
-## Governance Anti-Patterns
+## Governance antipatterns
 
 ### The Orphan Docs
 
@@ -298,7 +298,7 @@ Mark deprecated content clearly.
 
 ### The Vague Changelog
 
-Release notes that say "Various improvements" or "Bug fixes."
+Release notes that say "Various improvements" or "bugfixes."
 **Fix**:
 Be specific:
 "Fixed null pointer exception in auth middleware when session token is expired."
@@ -306,7 +306,7 @@ Link every change to its documentation.
 
 ---
 
-## Partner Documentation Anti-Patterns
+## Partner Documentation antipatterns
 
 ### The One-Sided Integration
 

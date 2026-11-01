@@ -248,7 +248,7 @@ payment = stripe.PaymentIntent.create( amount=2000, currency="usd", )
 - Comment the "why," not the "what"
 - Don't comment obvious code: `# Initialize the client` above `client = Client()`
 - Do comment non-obvious behavior: `# Retry with exponential backoff (max 3 attempts)`
-- Use TODO comments for parts the reader should customize: `# TODO: Replace with your API key`
+- Use todo comments for parts the reader should customize: `# TODO: Replace with your API key`
 
 ---
 

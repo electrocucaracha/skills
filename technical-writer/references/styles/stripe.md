@@ -51,7 +51,7 @@ When you hover over a concept in the center, the corresponding code highlights i
 
 **Diataxis default:** Static code blocks with expected output.
 **Stripe override:** Code examples are interactive —
-copy-paste buttons, language selectors,
+copypaste buttons, language selectors,
 and in some cases, executable directly from the documentation.
 
 ````markdown

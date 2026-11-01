@@ -40,7 +40,7 @@ and three levels:
 
 - `L1` — repo-specific action, keeps real paths and commands.
 - `L2` — project-agnostic tactic, symbolic anchors instead of paths.
-- `L3` — universal principle, names no file, tool, or repo.
+- `L3` — universal principle, names no file, tool, or repository.
 
 Retrieval mixes levels.
 Mixing beats any single level.
@@ -66,23 +66,29 @@ Override with `--root` or `REPAIR_KB_ROOT`.
    This is provenance;
    it is never retrieved as guidance.
 2. Check for an existing node before adding one:
+
    ```bash
    python3 scripts/kb.py query --stage localization --text "<the symptom>"
    ```
+
    If a node already covers it,
    edit that node instead of creating a duplicate.
 3. For each stage worth recording,
    emit a skeleton and fill it:
+
    ```bash
    python3 scripts/kb.py template --level L1 --stage localization \
        > .repair-kb/nodes/L1/<node-id>.md
    ```
+
    Write `pitfalls` from real dead ends in the session.
-   Write `applicable_when` as signals observable *before* the fix.
+   Write `applicable_when` as signals observable _before_ the fix.
 4. Validate and index:
+
    ```bash
    python3 scripts/kb.py validate && python3 scripts/kb.py index
    ```
+
    Fix every ERROR before continuing.
 5. Mirror to OpenViking, see Memory Sync below.
 
@@ -96,19 +102,23 @@ load it only when a validation error is unclear.
 ## Read Path — before fixing something new
 
 1. Retrieve guidance per stage:
+
    ```bash
    python3 scripts/kb.py query --stage localization --text "<error or symptom>" \
        --language <lang> --ecosystem <ecosystem>
    ```
+
 2. Read the printed files in the order given.
    That order is the guidance sequence.
-3. Adapt it into a plan for the current repo:
+3. Adapt it into a plan for the current repository:
    real paths, real commands, real verification.
    Drop guidance that does not apply and say why.
 4. Execute, then record what happened:
+
    ```bash
    python3 scripts/kb.py outcome --label verified NODE_ID
    ```
+
    Labels:
    `verified`, `partial`, `wrong-location`, `over-modification`, `refuted`.
    The command prints which field to revise for the non-verified labels.

@@ -50,6 +50,6 @@ Release: Ship code + docs together.
 | -------------------- | --------------------------------------- |
 | New feature          | How-to guide + API reference updates    |
 | Breaking change      | Migration guide + changelog entry       |
-| Bug fix              | Troubleshooting update (if user-facing) |
+| Bugfix               | Troubleshooting update (if user-facing) |
 | Deprecation          | Deprecation notice + migration path     |
 | Configuration change | Config reference update                 |

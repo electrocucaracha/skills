@@ -277,7 +277,7 @@ To apply a style override, read `references/styles/[style].md` and follow its di
 
 | Priority | Reference                           | When to read                                                                                              |
 | -------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1        | `references/content-types.md`       | Writing any specific content type — purpose, structure, principles, anti-patterns for all 14 types        |
+| 1        | `references/content-types.md`       | Writing any specific content type — purpose, structure, principles, antipatterns for all 14 types         |
 | 2        | `references/templates.md`           | Starting a new document — ready-to-use skeletons for tutorials, how-to, API ref, migration, runbook, etc. |
 | 3        | `references/style-guide.md`         | Making writing decisions — formatting, code examples, accessibility, multi-audience patterns              |
 | 4        | `references/anti-patterns.md`       | Reviewing documentation — consolidated checklist of documentation smells and common mistakes              |

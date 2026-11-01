@@ -38,7 +38,7 @@ Priority 4 (add at scale):
 ### README-First
 
 **Diataxis default:** Separate quickstart document.
-**Minimal override:** The README IS the quickstart.
+**Minimal override:** The readme IS the quickstart.
 Combine "what is this" + "get started" in one file.
 
 ````markdown

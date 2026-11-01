@@ -73,8 +73,8 @@ traj-<YYYY-MM-DD>-<short-context>
 IDs are lowercase,
 hyphen-separated,
 and stable.
-The node file name must be `<node-id>.md`;
-`kb.py outcome` resolves nodes by file name.
+The node filename must be `<node-id>.md`;
+`kb.py outcome` resolves nodes by filename.
 Renaming an ID breaks `parent`, `children`, and index references;
 use `supersedes` instead.
 
@@ -99,6 +99,7 @@ so add a term deliberately:
 
 ```markdown
 ## ci-metric-miscount
+
 A reported metric is an artifact of the measurement method rather than the
 system under test.
 Sibling terms: measurement-validity (L3 generalization).

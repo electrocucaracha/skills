@@ -2,7 +2,7 @@
 
 Detailed guidance for writing each enterprise documentation content type.
 Each section covers purpose, audience, structure, writing principles,
-and common anti-patterns.
+and common antipatterns.
 
 ## Table of Contents
 
@@ -115,7 +115,7 @@ and confidence is the entire point.
 - Affirm progress: "You've now built a working API"
 - Point out observations: "Notice that...", "Let's check..."
 
-### Anti-patterns
+### Antipatterns
 
 - Explaining concepts instead of guiding actions (abstraction, generalisation)
 - Offering choices between approaches
@@ -163,7 +163,7 @@ Link to prerequisites and move on.
 5. Run: The simplest meaningful operation
 6. Next steps: Links to tutorials and how-to guides
 
-### Anti-patterns
+### Antipatterns
 
 - Including explanation of architecture or design decisions
 - Requiring complex setup before showing any result
@@ -236,7 +236,7 @@ Unlike tutorials, how-to guides may need to fork and branch.
 - Be action-oriented: "Configure the storage bucket"
 - Address the reader directly: "You can verify this by..."
 
-### Anti-patterns
+### Antipatterns
 
 - Teaching concepts (that belongs in tutorials)
 - Including comprehensive parameter lists (that belongs in reference)
@@ -282,7 +282,7 @@ and compliance requirements.
 8. Going to production: Checklist for production readiness
 9. Support: Where to get help
 
-### Anti-patterns
+### Antipatterns
 
 - Only documenting your side of the interaction
 - Skipping error handling and edge cases
@@ -315,7 +315,7 @@ This helps users assess impact and plan their migration.
 This is the most valuable content in any migration guide.
 
 **Offer automated migration where possible.** Codemods, migration scripts,
-or CLI tools dramatically reduce migration friction.
+or command-line tools dramatically reduce migration friction.
 Document them prominently.
 
 **Be honest about effort.** Estimate migration complexity and time.
@@ -333,7 +333,7 @@ Document them prominently.
 8. Verification: How to confirm migration succeeded
 9. Rollback: How to revert if something goes wrong
 
-### Anti-patterns
+### Antipatterns
 
 - Burying breaking changes in a long narrative
 - Missing before/after code comparisons
@@ -376,7 +376,7 @@ Frustrated users need the answer immediately.
    - Solution: Steps to resolve it
    - Explanation: Why this happens (brief, linked to explanation docs)
 
-### Anti-patterns
+### Antipatterns
 
 - Organizing by internal component instead of user-visible symptom
 - Long explanations before the fix
@@ -410,7 +410,7 @@ There should be no doubt or ambiguity in reference.
 **Describe, don't instruct.** Reference is descriptive, not prescriptive.
 State what each endpoint does, not how to use it in a workflow (that's a how-to guide).
 
-**Mirror the API's structure.** Organize reference docs to match the API's resource structure.
+**Mirror the APIs structure.** Organize reference docs to match the APIs resource structure.
 If the API has `/users`, `/orders`, `/payments`, the docs should follow the same grouping.
 
 **Be exhaustive.** Every parameter, every response field, every error code, every header.
@@ -439,7 +439,7 @@ description, authentication, parameters, request example, response example, erro
 - Be precise: "String, max 255 characters" not "text field"
 - Use directive language for constraints: "Must be a valid ISO 8601 datetime"
 
-### Anti-patterns
+### Antipatterns
 
 - Mixing how-to content with reference (keep them separate, link between them)
 - Incomplete parameter descriptions
@@ -483,7 +483,7 @@ they just describe it at different abstraction levels.
 4. Types/models: Data classes with field descriptions
 5. Constants/enums: With descriptions
 
-### Anti-patterns
+### Antipatterns
 
 - Non-idiomatic code examples
 - Inconsistency with the API reference
@@ -535,7 +535,7 @@ Added, Changed, Deprecated, Removed, Fixed, Security.
 
 **Link to relevant docs.** Every change should link to the documentation for that feature.
 
-**Be specific.** "Fixed null pointer exception in payment processing when currency is undefined" not "Bug fixes."
+**Be specific.** "Fixed null pointer exception in payment processing when currency is undefined" not "bugfixes."
 
 **Include migration notes.** If a change requires user action, say so explicitly and link to the migration guide.
 
@@ -546,7 +546,7 @@ Added, Changed, Deprecated, Removed, Fixed, Security.
 - Categories: Added, Changed, Deprecated, Removed, Fixed, Security
 - Each item: One sentence + link to docs/PR
 
-### Anti-patterns
+### Antipatterns
 
 - Vague descriptions ("Various improvements")
 - Missing version numbers or dates
@@ -614,7 +614,7 @@ The reader is thinking, not coding.
 5. Trade-offs: What was gained and given up
 6. Further reading: Links to related explanation docs and external resources
 
-### Anti-patterns
+### Antipatterns
 
 - Scattering explanation across how-to guides (centralize it)
 - Including step-by-step instructions

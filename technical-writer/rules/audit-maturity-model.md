@@ -19,7 +19,7 @@ Adapted from Google OpenDocs Content Maturity Checklist with enterprise extensio
 Minimum viable documentation.
 The product is findable and installable.
 
-- [ ] README with project description and purpose
+- [ ] Readme with project description and purpose
 - [ ] Installation/setup instructions
 - [ ] At least one usage example
 - [ ] License information
