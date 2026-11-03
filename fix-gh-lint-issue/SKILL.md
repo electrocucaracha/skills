@@ -11,7 +11,7 @@ description: >
   "fix lint issue", or gives an issue URL or number from that workflow.
 ---
 
-# Fix GitHub Lint Issue
+# Fix GitHub linting issue
 
 Resolve a Super-Linter issue filed by the
 [linter.yml](https://github.com/electrocucaracha/gh-workflows/blob/main/.github/workflows/linter.yml)

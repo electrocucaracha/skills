@@ -93,6 +93,7 @@ Use this path after a fix lands.
 
    If a node already covers it,
    edit that node instead of creating a duplicate.
+
 3. For each stage worth recording,
    emit a skeleton and fill it:
 
@@ -103,6 +104,7 @@ Use this path after a fix lands.
 
    Write `pitfalls` from real dead ends in the session.
    Write `applicable_when` as signals observable _before_ the fix.
+
 4. Validate and index:
 
    ```bash
@@ -110,6 +112,7 @@ Use this path after a fix lands.
    ```
 
    Fix every ERROR before continuing.
+
 5. Mirror to OpenViking, see Memory Sync below.
 
 Abstracting `L1` into `L2` and `L3` is judgement work.

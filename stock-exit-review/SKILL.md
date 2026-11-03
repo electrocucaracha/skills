@@ -53,12 +53,12 @@ Execute bundled scripts without reading all their source files into context.
 ## Workflow
 
 1. Run the standard-library `scripts/preflight.py` once using `python3`.
-  Require a writable private run directory and a persistent history root
-  supplied by the scheduler outside the skill directory.
-  Stop if preflight exits nonzero or any required approval is denied or expires.
-  Report the blocker and the operator action;
-  do not retry Python versions, install packages manually, use sudo,
-  change mount permissions, or generate fallback scripts.
+   Require a writable private run directory and a persistent history root
+   supplied by the scheduler outside the skill directory.
+   Stop if preflight exits nonzero or any required approval is denied or expires.
+   Report the blocker and the operator action;
+   do not retry Python versions, install packages manually, use sudo,
+   change mount permissions, or generate fallback scripts.
 2. Run `scripts/analyze.py` for the ticker and optional benchmark.
    Use provider downloads or an adjusted OHLCV CSV from an approved source.
    Supply `--as-of` as the latest completed exchange session if known.
@@ -86,10 +86,10 @@ Execute bundled scripts without reading all their source files into context.
    Preserve stable record IDs and verify each write by reading it back.
    Never invent a URI scheme or claim a local file is already in OpenViking.
    If memory tools are unavailable, retain the files and report `sync_pending`.
-    Apply the same rule if the advertised upload host is unreachable.
-    Make at most one upload attempt and one exact read-back per artifact per run.
-    An accepted asynchronous write remains pending until verified on a later run.
-    Do not substitute semantic search or extracted memory for exact JSON storage.
+   Apply the same rule if the advertised upload host is unreachable.
+   Make at most one upload attempt and one exact read-back per artifact per run.
+   An accepted asynchronous write remains pending until verified on a later run.
+   Do not substitute semantic search or extracted memory for exact JSON storage.
    Retry pending records on later runs without generating duplicate forecasts.
 8. Use the configured Ollama model through Hermes to explain the evidence.
    Save the explanation beside the immutable JSON record as a separate artifact.

@@ -46,10 +46,10 @@ Ask for missing context only when it changes the document's purpose or scope.
 1. Classify the task as writing, planning, auditing, or editing.
 2. Identify the audience and content type using the tables below.
 3. Load only the relevant rule files and references.
-    For a style override,
-    read the corresponding file under `references/styles/`.
+   For a style override,
+   read the corresponding file under `references/styles/`.
 4. Draft or revise the document around one reader need.
-    Preserve accurate project-specific details and verify runnable examples.
+   Preserve accurate project-specific details and verify runnable examples.
 5. Apply the verification checklist before returning the document.
 
 ## Foundational Frameworks
