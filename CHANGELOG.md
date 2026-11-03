@@ -9,6 +9,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.1] - 2026-11-02
+
+### Changed
+
+- Standardized documentation formatting across several skills to improve consistency and readability, with updated indentation and rewritten headings to enhance clarity and uniformity. [30e102b3](https://github.com/electrocucaracha/skills/commit/30e102b304cf5a154784be08556bc1f2ba6d49a6)
+
+## [5.3.0] - 2026-11-02
+
+### Added
+
+- Enabled users to efficiently and consistently resolve Super-Linter GitHub issues through the introduction of a standardized documentation process outlined in the SKILL.md file. [0f2d4c97](https://github.com/electrocucaracha/skills/commit/0f2d4c974202e243cbeeabb5abe46ae5fcb970e3)
+
+## [5.2.0] - 2026-11-02
+
+### Added
+
+- Enabled explicit standard-library preflight checks for analyses and market data downloads, preventing silent or irrecoverable execution failures and improving deployment reliability and operator guidance. [e2d30935](https://github.com/electrocucaracha/skills/commit/e2d309351ced690d67b37fa88d2eba23bc3804b5)
+
+## [5.1.1] - 2026-11-02
+
+### Changed
+
+- Clarified and streamlined documentation for k8s-es-translation-audit, repair-knowledge-base, and technical-writer skills, enabling future maintainers to quickly understand usage context, expected inputs, and validation procedures. [e61e9a63](https://github.com/electrocucaracha/skills/commit/e61e9a63e54bf11b79d8eb133963a8821557c2aa)
+
+## [5.1.0] - 2026-11-01
+
+### Added
+
+- Introduced a research-only stock-exit-review skill with technical analysis workflow, enabling reproducible structured decision-making with Jev API support and immutable forecast evaluation, while maintaining compatibility with Hermes scheduling and avoiding automated trading or portfolio effects. [3d6f3e31](https://github.com/electrocucaracha/skills/commit/3d6f3e31763c858bc1440fc6e8fc897eabc52e87)
+
+## [5.0.0] - 2026-11-01
+
+### Removed
+
+- Discontinued automated validation and reporting for Spanish doc contributions as the k8s-es-translation-review directory and its custom scripts have been removed from the repository. [6779aef3](https://github.com/electrocucaracha/skills/commit/6779aef317ce9051ec9da01be18172843e31357a)
+
+## [4.6.2] - 2026-11-01
+
+### Changed
+
+- Updated markdownlint-cli and ai-prepare-commit-msg pre-commit hooks to their latest versions, ensuring access to new features and fixes. [cbfa7608](https://github.com/electrocucaracha/skills/commit/cbfa7608749816606145c113006044b3a039d578)
+
+## [4.6.1] - 2026-11-01
+
+### Changed
+
+- Standardized documentation terminology and style to ensure editorial coherence and unambiguous content review and navigation. [4dba5daa](https://github.com/electrocucaracha/skills/commit/4dba5daa5b498b6a12672467850c7d1e02bed9e2)
+
+## [4.6.0] - 2026-09-12
+
+### Added
+
+- Enabled project transparency and upgrade planning by introducing a detailed CHANGELOG.md file following Keep a Changelog and Semantic Versioning guidelines. [7a2b7bf4](https://github.com/electrocucaracha/skills/commit/7a2b7bf44cb1b5cbf114bb26d466efeca6d5d903)
+
 ## [4.5.0] - 2026-09-12
 
 ### Added
