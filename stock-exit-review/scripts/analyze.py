@@ -164,15 +164,16 @@ def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> 
         raise click.UsageError("benchmark-csv requires benchmark")
     frame = load_prices(ticker, csv, as_of)
     last_date = dt.date.fromisoformat(frame.index[-1])
+    benchmark_ticker = benchmark
     benchmark = None
     warnings = ["technical-only; fundamentals and news not collected"]
-    if benchmark:
-        other = load_prices(benchmark, benchmark_csv, as_of)
+    if benchmark_ticker:
+        other = load_prices(benchmark_ticker, benchmark_csv, as_of)
         common = frame.index.intersection(other.index)
         if len(common) < 21 or other.index[-1] != frame.index[-1]:
             raise ValueError("benchmark dates do not cover the latest session")
         benchmark = {
-            "ticker": benchmark, "source": "csv" if benchmark_csv
+            "ticker": benchmark_ticker, "source": "csv" if benchmark_csv
             else "yfinance", "return_20": float(
                 other.loc[common[-1], "close"] /
                 other.loc[common[-21], "close"] - 1

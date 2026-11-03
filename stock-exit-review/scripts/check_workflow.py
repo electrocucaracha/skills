@@ -33,6 +33,7 @@ import copy
 import datetime as dt
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -43,6 +44,7 @@ import pandas as pd
 import analyze
 import decide
 import history
+import preflight
 
 
 class WorkflowChecks(unittest.TestCase):
@@ -88,10 +90,14 @@ class WorkflowChecks(unittest.TestCase):
         output = self.root / "analysis.json"
         invocation = CliRunner().invoke(analyze.main, [
             "--ticker", "aapl", "--csv", str(path), "--as-of", "2026-10-30",
+            "--benchmark", "SPY", "--benchmark-csv", str(path),
             "--output", str(output),
         ])
         self.assertEqual(invocation.exit_code, 0, invocation.output)
         self.assertEqual(analyze.read_json(output)["ticker"], "AAPL")
+        benchmark = analyze.read_json(output)["benchmark"]
+        self.assertEqual(benchmark["ticker"], "SPY")
+        self.assertAlmostEqual(benchmark["return_20"], 199 / 179 - 1)
         pd.concat([frame, frame.iloc[-1:]]).to_csv(path, index_label="date")
         with self.assertRaises(ValueError):
             analyze.load_prices("AAPL", str(path), dt.date(2026, 10, 30))
@@ -105,6 +111,41 @@ class WorkflowChecks(unittest.TestCase):
         self.assertEqual(decide.assessment(self.answers, 0.6)[0], "review_exit")
         self.answers["trend"]["confidence"] = 0.1
         self.assertEqual(decide.assessment(self.answers, 0.6)[0], "insufficient_evidence")
+
+    def test_preflight_imports_and_failure_bounds(self):
+        run_dir, history_root = self.root / "run", self.root / "history"
+        with patch("preflight.shutil.which", return_value="/usr/bin/uv"), patch(
+            "preflight.subprocess.run"
+        ) as probe:
+            probe.return_value = subprocess.CompletedProcess([], 0, b"", b"")
+            self.assertEqual(preflight.check_runtime(run_dir, history_root, 10)["status"], "ready")
+            self.assertEqual(probe.call_args.kwargs["timeout"], 10)
+            self.assertEqual(probe.call_args.kwargs["cwd"], run_dir)
+            command = probe.call_args.args[0]
+            self.assertIn("pydantic>=2.10,<3", command)
+            self.assertIn("yfinance>=0.2.54,<1", command)
+            self.assertIn("import numpy", command[-2])
+            probe.return_value = subprocess.CompletedProcess(
+                [], 1, b"", b"numpy.so: failed to map segment from shared object"
+            )
+            self.assertEqual(preflight.check_runtime(run_dir, history_root, 10)["reason"],
+                             "native_import_failed")
+            probe.side_effect = subprocess.TimeoutExpired(command, 10)
+            self.assertEqual(preflight.check_runtime(run_dir, history_root, 10)["reason"],
+                             "dependency_probe_timeout")
+            self.assertEqual(probe.call_count, 3)
+
+    def test_preflight_paths_and_missing_uv(self):
+        with self.assertRaises(ValueError):
+            preflight.check_runtime(Path("relative"), self.root, 10)
+        with self.assertRaises(ValueError):
+            preflight.check_runtime(Path(preflight.__file__).resolve().parent, self.root, 10)
+        with patch("preflight.shutil.which", return_value=None), patch(
+            "preflight.subprocess.run"
+        ) as probe:
+            self.assertEqual(preflight.check_runtime(self.root, self.root, 10)["reason"],
+                             "uv_missing")
+            probe.assert_not_called()
 
     def test_jev_transport_and_validation(self):
         response = {"model": "offline-fixture", "answers": self.answers}

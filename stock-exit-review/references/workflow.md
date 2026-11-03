@@ -1,16 +1,43 @@
 # Runtime Workflow
 
+## Contents
+
+- [Dependencies](#dependencies)
+- [Restricted Hermes Runtimes](#restricted-hermes-runtimes)
+- [Market Inputs](#market-inputs)
+- [Jev Decisions](#jev-decisions)
+- [History And Evaluation](#history-and-evaluation)
+- [OpenViking Sync](#openviking-sync)
+- [Explanation](#explanation)
+- [Offline Check](#offline-check)
+
 ## Dependencies
 
-Make `uv` available on Hermes's `PATH` and preserve script execution permissions.
-The scripts use `#!/usr/bin/env -S uv --quiet run --script` and PEP 723 metadata.
+Make system Python 3.11+ and `uv` available on Hermes's `PATH`.
+Run the standard-library preflight before downloading market data or calling Jev:
+
+```bash
+python3 "$SKILL_DIR/scripts/preflight.py" --run-dir "$RUN_DIR" --history-root "$STOCK_HISTORY_ROOT"
+```
+
+The probe checks writable absolute directories outside the installed skill,
+then imports the workflow modules and native dependencies through uv.
+It reads dependencies from the scripts' PEP 723 metadata.
+It does not call Yahoo Finance, Jev, or OpenViking,
+or print credentials and raw dependency errors.
+It has a 180-second default timeout with no retries;
+operators can set `--timeout` between 1 and 600 seconds during provisioning.
+Exit zero and `status: ready` establish local import readiness only,
+not network access or durable storage.
+
+Use explicit uv invocations rather than relying on executable script bits
+or the shebang's `env -S` support.
 uv selects Python 3.12+ and resolves each script's declared dependencies.
 The first invocation may require internet access for Python and package downloads.
-The host's `env` command must support `-S`.
 No manual virtual environment activation or pip installation is required:
 
 ```bash
-"$SKILL_DIR/scripts/analyze.py" --help
+uv run --no-project --script "$SKILL_DIR/scripts/analyze.py" --help
 ```
 
 Use the libraries declared in each script's inline metadata:
@@ -48,9 +75,52 @@ Use a private history root outside the skill directory.
 Publish temporary outputs in a unique run directory,
 then use the paths returned by the record writer for memory synchronization.
 Apply a lock and a timeout to the complete Hermes invocation.
+Use a ten-minute workflow budget by default,
+including preflight and memory synchronization;
+stop and report the last completed stage when it expires.
 The HTTP request timeout is 30 seconds with no automatic retries.
 TLS certificate verification remains enabled;
 Jev requests require TLS 1.3 and do not follow redirects.
+
+## Restricted Hermes Runtimes
+
+Resolve `SKILL_DIR` from the installed skill location provided by Hermes.
+Host checkout paths and sandbox mount paths can differ.
+If the directory is absent or unreadable,
+stop and request the correct skill mount rather than searching the filesystem.
+An inaccessible terminal working directory must be corrected in the terminal
+or scheduler configuration before launching commands.
+Do not reset `HOME`;
+that can relocate uv's cache and managed Python onto unsuitable storage.
+
+On Linux,
+`failed to map segment from shared object` may indicate a `noexec` mount,
+not insufficient memory or an incompatible NumPy release.
+A writable `/tmp` can still forbid executable mappings from native `.so` files.
+Changing Python versions, reinstalling wheels, or chmod cannot fix `noexec`.
+Plain Python scripts can be read from such a mount by an executable interpreter;
+native libraries still need executable storage.
+
+Before enabling scheduled reviews,
+an operator must provision an executable Python interpreter and writable,
+exec-capable locations for `UV_CACHE_DIR` and `UV_PYTHON_INSTALL_DIR`,
+or rebuild the sandbox image with the required runtime.
+Set these variables in the scheduler environment before preflight
+and preserve them for all subsequent commands.
+Never remount filesystems, elevate privileges, or disable sandbox protections.
+If all writable storage is `noexec`,
+stop with a runtime blocker.
+Do not recreate NumPy, pandas, ta, Pydantic, HTTPX, or the history writer
+as ad hoc pure-Python fallback scripts.
+
+The scheduler must also supply a persistent `STOCK_HISTORY_ROOT`,
+such as a durable volume visible to the execution sandbox.
+Preflight checks writability but cannot prove persistence across sandbox restarts.
+Temporary run artifacts may use `/tmp`;
+authoritative history may not rely on ephemeral sandbox storage.
+If a required tool approval is denied or times out,
+stop that operation and report it.
+Do not retry through `execute_code`, another tool, or a terminal heredoc.
 
 ## Market Inputs
 
@@ -71,7 +141,7 @@ Provide at least 80 bars for indicator warm-up.
 Prefer two years of history for long forecast horizons.
 
 ```bash
-"$SKILL_DIR/scripts/analyze.py" --ticker AAPL --csv "$RUN_DIR/aapl.csv" --benchmark SPY --benchmark-csv "$RUN_DIR/spy.csv" --as-of 2026-10-30 --output "$RUN_DIR/analysis.json"
+uv run --no-project --script "$SKILL_DIR/scripts/analyze.py" --ticker AAPL --csv "$RUN_DIR/aapl.csv" --benchmark SPY --benchmark-csv "$RUN_DIR/spy.csv" --as-of 2026-10-30 --output "$RUN_DIR/analysis.json"
 ```
 
 Without `--as-of`, the loader excludes the current UTC calendar date.
@@ -186,6 +256,8 @@ choose a stock-review namespace scoped by ticker under the observed root.
 Preserve observation and evaluation IDs in the mirrored paths.
 If the installation only accepts Markdown,
 mirror each JSON object in a fenced JSON block without altering numbers.
+Require exact content storage and read-back,
+not a memory-extraction tool that summarizes or rewrites the object.
 
 Keep a separate sync receipt for each artifact outside immutable records.
 Store destination, record ID, content digest, and verification time.
@@ -196,8 +268,28 @@ Retry only missing or failed mirrors;
 do not rerun forecasts just because indexing failed.
 Use deployment-supported enumeration tools rather than inventing memory paths.
 
-If no write or import tool is exposed,
+If an import tool returns a signed-upload URL,
+attempt it only through the documented transport to the expected deployment host.
+Keep signed URLs and tokens out of logs and receipts.
+The execution sandbox may not resolve or reach a host that the MCP proxy can reach.
+Make at most one upload attempt per artifact with a 30-second transport timeout.
+If that host is unreachable,
+do not guess alternate hosts, tunnel, or switch to lossy memory extraction.
+An MCP-only exact write is acceptable only if that capability is documented
+by the deployment's tools.
+
+Make at most one exact read-back attempt per artifact in a run.
+An accepted asynchronous write is still `sync_pending` until its content matches.
+Record the returned destination or job ID and retry verification on a later run;
+do not upload it again merely because indexing is pending.
+Semantic search misses do not establish write failure,
+and approximate search hits do not verify a mirror.
+
+If no reachable exact write or import tool is exposed,
 report `sync_pending` and include the retained local paths.
+A pending receipt includes the failure stage and safe reason,
+destination or job ID if provided, content digest, and last attempt time.
+Leave verification time unset until exact read-back succeeds.
 Never claim OpenViking persistence merely because local JSON was written.
 
 ## Explanation
@@ -218,15 +310,16 @@ retain the numerical artifacts and mark the explanation unavailable.
 
 ## Offline Check
 
-Run directly with uv available on `PATH`:
+Run with uv available on `PATH`:
 
 ```bash
-"$SKILL_DIR/scripts/check_workflow.py"
+uv run --no-project --script "$SKILL_DIR/scripts/check_workflow.py"
 ```
 
 The check uses synthetic prices and mocked Jev responses in temporary files.
 It covers Click interfaces, indicators, CSV ordering, duplicate dates, decision branches,
 payload allowlisting, missing credentials, immutable recording,
-forecast maturity, Brier scoring, and hindsight/revision guards.
+forecast maturity, Brier scoring, hindsight/revision guards,
+benchmark retention, and bounded preflight failures.
 It does not contact Yahoo Finance, Jev, Ollama, or OpenViking.
 Verify those live integrations separately in the configured Hermes deployment.
