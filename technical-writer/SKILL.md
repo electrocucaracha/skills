@@ -3,7 +3,7 @@ name: technical-writer
 description: Write, plan, and audit enterprise technical documentation using Diataxis-based guidance and docs-as-code practices. Use when improving developer or partner documentation quality and structure.
 ---
 
-# Tech Docs
+# Technical Writer
 
 This skill provides a comprehensive system for writing, planning, auditing,
 and improving technical documentation for enterprise products.
@@ -16,7 +16,7 @@ and partner documentation, with a focus on practical application and iterative i
 It includes specific rules for each area, examples of correct and incorrect documentation,
 and guidance on when to use each framework and style.
 
-## When to Use This Skill
+## When to Use
 
 This skill is for **writing, planning, auditing,
 and improving technical documentation** for products that need developer and partner adoption.
@@ -31,6 +31,26 @@ It synthesizes seven proven frameworks into a unified system.
 | Set up docs-as-code           | Use architecture rules (`arch-` prefix)                   |
 | Build partner documentation   | Use DX rules (`dx-` prefix)                               |
 | Migrate/version documentation | Use governance rules (`gov-` prefix)                      |
+
+## Inputs
+
+Identify the target document or documentation set,
+the intended audience, and the outcome readers need to achieve.
+Use the existing project conventions and source evidence.
+Accept a requested writing style;
+otherwise use the default Diataxis guidance.
+Ask for missing context only when it changes the document's purpose or scope.
+
+## Workflow
+
+1. Classify the task as writing, planning, auditing, or editing.
+2. Identify the audience and content type using the tables below.
+3. Load only the relevant rule files and references.
+    For a style override,
+    read the corresponding file under `references/styles/`.
+4. Draft or revise the document around one reader need.
+    Preserve accurate project-specific details and verify runnable examples.
+5. Apply the verification checklist before returning the document.
 
 ## Foundational Frameworks
 
@@ -111,7 +131,7 @@ It synthesizes seven proven frameworks into a unified system.
 
 Every document serves one of four fundamental purposes (Diataxis quadrants):
 
-```
+```text
                     PRACTICAL
                        |
          Tutorials     |     How-to Guides
@@ -165,7 +185,7 @@ ask two questions:**
 
 Prioritize content types that unblock the current bottleneck:
 
-```
+```text
 Discover  → "What is this?"           → Explanation, README
 Evaluate  → "Should I use this?"      → Architecture, Comparison
 Start     → "How do I begin?"         → Quickstart, Tutorial
@@ -232,11 +252,11 @@ Small, responsive iterations over top-down planning.
 **Complete, not finished.** Like a living plant, your documentation is never finished (it can always grow) but always complete (nothing is missing at this stage of growth).
 Every stage from seed to mature tree is whole.
 
-## How to Use
+## Rule Files
 
 Read individual rule files for detailed explanations and examples:
 
-```
+```text
 rules/write-one-purpose-per-doc.md
 rules/style-active-voice-second-person.md
 rules/style-semantic-line-breaks.md
@@ -272,6 +292,21 @@ and tone.
 | **Minimal**            | Startups, MVPs, internal tools        | README-first, auto-generate what you can, ship without perfection                         |
 
 To apply a style override, read `references/styles/[style].md` and follow its divergences from the default.
+
+## Verification
+
+- Confirm the document has one purpose and a clear audience.
+- Check technical claims and examples against available source evidence.
+- Confirm headings, terminology, links, and tone are consistent.
+- Apply semantic line breaks and the project's Markdown conventions.
+- Distinguish verified facts from assumptions and unverified examples.
+
+## Gotchas
+
+- Do not mix tutorials, how-to guides, reference, and explanation in one page.
+- Do not create empty documentation categories before content needs them.
+- Do not load every rule and style reference for a single-document task.
+- Structure and tone improvements do not establish technical accuracy.
 
 ## References
 

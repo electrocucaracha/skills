@@ -1,13 +1,22 @@
 ---
 name: k8s-es-translation-audit
-description: "Detect missing or outdated Kubernetes Spanish documentation by cloning kubernetes/website to a temporary folder, comparing content/es against content/en for file parity and paragraph alignment, scoring every finding by Hugo navigation weight so the highest-traffic pages are prioritized first, and producing an issue-ready Markdown report for project triage. Use when asked to find untranslated docs, stale translations, paragraph drift, translation deletion gaps, or inconsistent Spanish documentation style."
-argument-hint: "Optional scope path under content/en (for example: docs/tasks/)"
+description: >
+  Detect missing or outdated Kubernetes Spanish documentation by cloning
+  kubernetes/website to a temporary folder, comparing content/es against
+  content/en for file parity and paragraph alignment, scoring every finding
+  by Hugo navigation weight so the highest-traffic pages are prioritized first,
+  and producing an issue-ready Markdown report for project triage.
+  Use when asked to find untranslated docs, stale translations, paragraph drift,
+  translation deletion gaps, or inconsistent Spanish documentation style.
+metadata:
+  argument-hint: "Optional scope path under content/en (for example: docs/tasks/)"
 ---
 
-# get-k8s-es-docs
+# Kubernetes Spanish Translation Audit
 
-Audit Kubernetes Spanish documentation completeness and consistency. The skill
-executes two deterministic scripts (`scripts/audit.py` → `scripts/report.py`),
+Audit Kubernetes Spanish documentation completeness and consistency.
+The skill executes two deterministic scripts
+(`scripts/audit.py` → `scripts/report.py`),
 then prints the report path so the output is always reproducible.
 
 ## When to Use
@@ -26,7 +35,7 @@ Typical prompts:
 - `run a full es vs en translation drift analysis`
 - `generate an issue-ready report for k8s Spanish translation gaps`
 
-## Required Inputs
+## Inputs
 
 | Input                         | Required | Default                                            |
 | ----------------------------- | -------- | -------------------------------------------------- |
@@ -35,9 +44,9 @@ Typical prompts:
 | Output report path            | no       | `./reports/k8s-es-translation-audit-YYYY-MM-DD.md` |
 | Strictness mode               | no       | `normal`                                           |
 
-## Procedure
+## Workflow
 
-### Step 1 — Clone the repository
+### 1. Clone the Repository
 
 Use a shallow sparse checkout to fetch only the two language trees.
 
@@ -66,9 +75,7 @@ echo "es: $(find content/es -name '*.md' -o -name '*.mdx' | wc -l)"
 
 Expected: EN ≈ 2 400–2 600 files, ES ≈ 200–300 files.
 
----
-
-### Step 2 — Run the auditor (`scripts/audit.py`)
+### 2. Run the Auditor
 
 ```bash
 python3 scripts/audit.py \
@@ -123,9 +130,7 @@ The script writes a single JSON file with all findings.
    - STYLE-002: mixed imperative register (`tú` vs `usted` verb forms)
    - STYLE-003: inconsistent treatment of the `Deployment` API object term
 
----
-
-### Step 3 — Generate the Markdown report (`scripts/report.py`)
+### 3. Generate the Report
 
 ```bash
 python3 scripts/report.py \
@@ -151,9 +156,7 @@ The report is written to `./reports/` by default. Print the path to the user.
 11. Issue candidates with severity
 12. Next actions checklist for project board intake
 
----
-
-### Step 4 — Quality checks before returning
+## Verification
 
 All of the following must be true:
 
@@ -164,8 +167,6 @@ All of the following must be true:
 - [ ] report file exists and its line count is > 100
 
 If any check fails, print the first failing item and the remediation.
-
----
 
 ## Decision Rules
 
@@ -192,3 +193,18 @@ Ask only when required:
 - Should the audit cover all docs or a specific subtree? (maps to `--scope`)
 - Where to save the findings report? (maps to `--out`)
 - Normal or strict paragraph-alignment mode? (maps to `--strictness`)
+
+## Gotchas
+
+- A failed sparse checkout is not permission to download the full repository.
+  Confirm with the user before changing clone scope.
+- Hugo navigation weights are a prioritization proxy,
+  not measured page views.
+- Structural drift is evidence for review,
+  not proof that a translation changes the source meaning.
+- Keep partial parsing errors visible in the report.
+
+## References
+
+- [Auditor](scripts/audit.py): deterministic file parity, alignment, and scoring.
+- [Report Generator](scripts/report.py): issue-ready Markdown output.

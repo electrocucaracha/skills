@@ -32,6 +32,22 @@ All mechanical work is done by `scripts/kb.py`.
 Run the commands;
 do not reimplement their logic.
 
+## When to Use
+
+- Capture a completed fix as reusable repair guidance.
+- Retrieve earlier repairs before investigating a new failure.
+- Record whether reused guidance worked in a different repository.
+- Mirror repair knowledge into OpenViking.
+
+## Inputs
+
+For capture,
+use the completed repair's steps, verification evidence, and repository context.
+For retrieval,
+use the current symptom, stage, language, and ecosystem.
+The local root defaults to `.repair-kb/`;
+override it with `--root` or `REPAIR_KB_ROOT`.
+
 ## Model
 
 One repair produces nodes at three stages
@@ -59,7 +75,11 @@ python3 scripts/kb.py outcome --label verified NODE_ID [NODE_ID ...]
 Root defaults to `.repair-kb/`.
 Override with `--root` or `REPAIR_KB_ROOT`.
 
-## Write Path — after a fix lands
+## Workflow
+
+### Write Path
+
+Use this path after a fix lands.
 
 1. Save the raw session steps to
    `.repair-kb/trajectories/traj-<date>-<context>.md`.
@@ -99,7 +119,9 @@ Field definitions live in
 [references/node-schema.md](references/node-schema.md);
 load it only when a validation error is unclear.
 
-## Read Path — before fixing something new
+### Read Path
+
+Use this path before fixing something new.
 
 1. Retrieve guidance per stage:
 
@@ -147,6 +169,13 @@ Layout, ID rules, and retrieval details are in
 [references/viking-layout.md](references/viking-layout.md).
 Load it only before the first sync of a session.
 
+## Verification
+
+- Run `validate` and resolve every error before indexing or synchronizing.
+- Run `index` after changing nodes.
+- Record an `outcome` for every retrieved node used in a repair.
+- Report which files were mirrored and whether memory sync is pending.
+
 ## Gotchas
 
 - **Never retrieve raw trajectories as guidance.**
@@ -167,3 +196,12 @@ Load it only before the first sync of a session.
 - **`[STALE]` in query output means unverified for over 180 days.**
   Treat that guidance as a hypothesis,
   not a fact.
+
+## References
+
+- [Abstraction Prompts](references/abstraction-prompts.md): load when deriving
+  portable `L2` and `L3` guidance from a verified `L1` repair.
+- [Node Schema](references/node-schema.md): load when a field or validation
+  error is unclear.
+- [Viking Layout](references/viking-layout.md): load before the first memory
+  synchronization of a session.
