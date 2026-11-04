@@ -1,0 +1,10 @@
+{
+  "name": "technical-writer",
+  "description": "Write, plan, and audit technical documentation",
+  "version": "5.3.1",
+  "author": {
+    "name": "electrocucaracha"
+  },
+  "repository": "https://github.com/electrocucaracha/skills",
+  "skills": ["./"]
+}

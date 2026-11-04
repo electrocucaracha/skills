@@ -1,0 +1,10 @@
+{
+  "name": "fix-gh-lint-issue",
+  "description": "Resolve shared Super-Linter workflow failures",
+  "version": "5.3.1",
+  "author": {
+    "name": "electrocucaracha"
+  },
+  "repository": "https://github.com/electrocucaracha/skills",
+  "skills": ["./"]
+}
