@@ -15,12 +15,14 @@ cleanup:
 	rm -rf .tox/ .venv/
 
 .PHONY: fmt
-fmt: cleanup
+fmt:
 	command -v textlint > /dev/null && npm list --global --depth=0 textlint-rule-terminology > /dev/null 2>&1 || sudo npm install --global textlint textlint-rule-terminology
-	textlint . --fix
+	textlint . --fix --ignore-path .gitignore
 	command -v shfmt > /dev/null || curl -s "https://i.jpillora.com/mvdan/sh!!?as=shfmt" | bash
-	shfmt -l -w -s -i 4 .
+	git ls-files --cached --others --exclude-standard -z -- '*.sh' | xargs -0 shfmt -l -w -s -i 4
 	command -v yamlfmt > /dev/null || curl -s "https://i.jpillora.com/google/yamlfmt!!" | bash
-	yamlfmt -dstar **/*.{yaml,yml}
+	yamlfmt -dstar -gitignore_excludes '**/*.{yaml,yml}'
 	command -v prettier > /dev/null || npm install prettier
-	npx prettier . --write
+	npx --yes prettier . --write --ignore-path .gitignore --use-tabs false --prose-wrap preserve
+	uvx ruff check --select I --fix .
+	uvx ruff format .
