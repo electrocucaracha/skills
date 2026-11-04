@@ -5,19 +5,19 @@
   },
   "metadata": {
     "description": "Reusable documentation and engineering skills",
-    "version": "5.3.1"
+    "version": "5.8.0"
   },
   "plugins": [
     {
       "name": "technical-writer",
       "description": "Write, plan, and audit technical documentation",
-      "version": "5.3.1",
+      "version": "5.8.0",
       "source": "./technical-writer"
     },
     {
       "name": "fix-gh-lint-issue",
       "description": "Resolve shared Super-Linter workflow failures",
-      "version": "5.3.1",
+      "version": "5.8.0",
       "source": "./fix-gh-lint-issue"
     }
   ]
