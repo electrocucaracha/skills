@@ -9,6 +9,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.8.1] - 2026-11-04
+
+### Changed
+
+- Updated plugin versions and CI workflows to reference the latest releases, ensuring the repository and CI/CD integration remains current. [d43ed9a4](https://github.com/electrocucaracha/skills/commit/d43ed9a43d4df930c9505e886a63d217c1435e6f)
+
+## [5.8.0] - 2026-11-04
+
+### Added
+
+- Introduced a marketplace.json manifest specifying plugin metadata and available plugins for reusable documentation and engineering skills, enabling discovery and integration with plugin management tools. [a8e166ba](https://github.com/electrocucaracha/skills/commit/a8e166ba393034be7f0d3d2d9170713d690470b6)
+
+## [5.7.0] - 2026-11-04
+
+### Added
+
+- Enabled repository CI automation with reusable workflow callers that trigger linter validation on push and pull requests, and schedule dependency updates with PR automation, while requiring configuration of WORKFLOW_TOKEN and COPILOT_TOKEN secrets. [822452e6](https://github.com/electrocucaracha/skills/commit/822452e6169539bc7a63f6721f88dd5012b885ba)
+
+## [5.6.0] - 2026-11-04
+
+### Added
+
+- Automated dependency and version updates are now enabled, improving maintainability by keeping dependencies and plugin metadata up to date with minimal manual intervention. [5808ce35](https://github.com/electrocucaracha/skills/commit/5808ce351289ccdc85b7c11fe248e07be3313797)
+
+## [5.5.3] - 2026-11-04
+
+### Changed
+
+- Stabilized code block formatting and presentation consistency across technical writing guides, ensuring proper rendering and editing of tables and command-line examples. [e7a005d8](https://github.com/electrocucaracha/skills/commit/e7a005d88ad09fc801ea7a3105fdcbdaea19ae59)
+
+## [5.5.2] - 2026-11-04
+
+### Changed
+
+- Normalized the fmt target to respect .gitignore exclusions and apply consistent formatting and style checks across supported file types. [f79fef94](https://github.com/electrocucaracha/skills/commit/f79fef9433411cbacf26442b22f1a7f8f53681ae)
+
+## [5.5.1] - 2026-11-04
+
+### Fixed
+
+- Resolved the issue of false positives in documents with reused subheadings by limiting MD024 to check for duplicate header names among siblings. [d6e12e41](https://github.com/electrocucaracha/skills/commit/d6e12e41fe4685528253a16f175fcd5260d72dc1)
+
+## [5.5.0] - 2026-11-04
+
+### Added
+
+- Enabled plugin metadata visibility by introducing plugin.json manifests for fix-gh-lint-issue and technical-writer plugins, providing essential information for integration and discovery within the project. [5130de9f](https://github.com/electrocucaracha/skills/commit/5130de9fd6bd6b68f9d5daad38969e3f0ce6d108)
+
+## [5.4.0] - 2026-11-02
+
+### Added
+
+- Enabled project transparency by documenting new features, documentation improvements, standardization efforts, and removals in the CHANGELOG.md file for releases 4.6.0 through 5.3.1. [927cd107](https://github.com/electrocucaracha/skills/commit/927cd1077bf1ae69b2f849f716d0fabc657e48ec)
+
 ## [5.3.1] - 2026-11-02
 
 ### Changed
