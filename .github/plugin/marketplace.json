@@ -1,0 +1,24 @@
+{
+  "name": "electrocucaracha-skills",
+  "owner": {
+    "name": "electrocucaracha"
+  },
+  "metadata": {
+    "description": "Reusable documentation and engineering skills",
+    "version": "5.3.1"
+  },
+  "plugins": [
+    {
+      "name": "technical-writer",
+      "description": "Write, plan, and audit technical documentation",
+      "version": "5.3.1",
+      "source": "./technical-writer"
+    },
+    {
+      "name": "fix-gh-lint-issue",
+      "description": "Resolve shared Super-Linter workflow failures",
+      "version": "5.3.1",
+      "source": "./fix-gh-lint-issue"
+    }
+  ]
+}
