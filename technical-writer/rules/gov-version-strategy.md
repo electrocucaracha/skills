@@ -27,7 +27,7 @@ version documentation that describes versioned behavior, don't version documenta
 
 ## Lifecycle
 
-```
+```text
 Preview → Current → Supported → Deprecated → Archived
 ```
 

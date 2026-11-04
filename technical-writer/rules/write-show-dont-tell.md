@@ -48,7 +48,6 @@ Subscribe to a stream and process events as they arrive:
   }
 }
 ```
-````
 
 Connect and consume events:
 
@@ -60,12 +59,10 @@ for event in consumer.stream():
     print(f"Order {event.data['order_id']} shipped")
     event.ack()
 ```
-
-```
+````
 
 Real payload. Real code. The developer understands immediately.
 
 ## Principle
 
 For every concept you describe, ask: "Can I show this with code, a response, a diagram, or a screenshot?" If yes, show it. The showing often replaces the telling entirely.
-```

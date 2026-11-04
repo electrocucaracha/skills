@@ -7,12 +7,12 @@ Use this as a review checklist before publishing.
 
 ## Table of Contents
 
-1. [Structural antipatterns](#structural-anti-patterns)
-2. [Content antipatterns](#content-anti-patterns)
-3. [Style antipatterns](#style-anti-patterns)
-4. [Developer Experience antipatterns](#developer-experience-anti-patterns)
-5. [Governance antipatterns](#governance-anti-patterns)
-6. [Partner Documentation antipatterns](#partner-documentation-anti-patterns)
+1. [Structural antipatterns](#structural-antipatterns)
+2. [Content antipatterns](#content-antipatterns)
+3. [Style antipatterns](#style-antipatterns)
+4. [Developer Experience antipatterns](#developer-experience-antipatterns)
+5. [Governance antipatterns](#governance-antipatterns)
+6. [Partner Documentation antipatterns](#partner-documentation-antipatterns)
 
 ---
 

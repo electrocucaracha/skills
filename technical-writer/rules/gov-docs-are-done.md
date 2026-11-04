@@ -16,7 +16,7 @@ They reinforce this by including documentation in engineering career ladders and
 
 ## Incorrect
 
-```
+```text
 Feature PR: ✅ Code complete
 Feature PR: ✅ Tests passing
 Feature PR: ✅ Code review approved
@@ -27,7 +27,7 @@ Release: Ship it anyway.
 
 ## Correct
 
-```
+```text
 Feature PR: ✅ Code complete
 Feature PR: ✅ Tests passing
 Feature PR: ✅ Code review approved

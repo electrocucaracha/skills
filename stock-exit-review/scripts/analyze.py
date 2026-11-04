@@ -33,11 +33,11 @@ from __future__ import annotations
 import datetime as dt
 import json
 import math
-from pathlib import Path
 import re
+from pathlib import Path
 
-from atomicwrites import atomic_write
 import click
+from atomicwrites import atomic_write
 
 
 def ticker_value(value: str) -> str:
@@ -89,9 +89,13 @@ def load_prices(ticker: str, csv: str | None, as_of: dt.date):
         import yfinance as yf
 
         frame = yf.download(
-            ticker, start=(as_of - dt.timedelta(days=800)).isoformat(),
+            ticker,
+            start=(as_of - dt.timedelta(days=800)).isoformat(),
             end=(as_of + dt.timedelta(days=1)).isoformat(),
-            auto_adjust=True, progress=False, threads=False, timeout=30,
+            auto_adjust=True,
+            progress=False,
+            threads=False,
+            timeout=30,
         )
         if isinstance(frame.columns, pd.MultiIndex):
             frame.columns = frame.columns.get_level_values(0)
@@ -111,8 +115,8 @@ def load_prices(ticker: str, csv: str | None, as_of: dt.date):
     if (frame[["open", "high", "low", "close"]] <= 0).any().any():
         raise ValueError("prices must be positive")
     if (frame.volume < 0).any() or (
-        (frame.high < frame[["open", "close", "low"]].max(axis=1)) |
-        (frame.low > frame[["open", "close", "high"]].min(axis=1))
+        (frame.high < frame[["open", "close", "low"]].max(axis=1))
+        | (frame.low > frame[["open", "close", "high"]].min(axis=1))
     ).any():
         raise ValueError("invalid OHLCV relationships")
     return frame
@@ -129,8 +133,10 @@ def features(frame) -> dict:
     slow = SMAIndicator(close, window=50).sma_indicator()
     atr = AverageTrueRange(frame.high, frame.low, close).average_true_range()
     values = {
-        "close": close.iloc[-1], "sma_20": fast.iloc[-1],
-        "sma_50": slow.iloc[-1], "rsi_14": RSIIndicator(close).rsi().iloc[-1],
+        "close": close.iloc[-1],
+        "sma_20": fast.iloc[-1],
+        "sma_50": slow.iloc[-1],
+        "rsi_14": RSIIndicator(close).rsi().iloc[-1],
         "macd_histogram": MACD(close).macd_diff().iloc[-1],
         "atr_fraction": atr.iloc[-1] / close.iloc[-1],
         "return_20": close.iloc[-1] / close.iloc[-21] - 1,
@@ -138,7 +144,8 @@ def features(frame) -> dict:
         "max_drawdown": (close / close.cummax() - 1).min(),
         "drawdown_from_peak": close.iloc[-1] / close.max() - 1,
         "volume_ratio_20": frame.volume.iloc[-1] / frame.volume.tail(20).mean()
-        if frame.volume.tail(20).mean() > 0 else None,
+        if frame.volume.tail(20).mean() > 0
+        else None,
     }
     return {
         key: round(float(value), 8) if value is not None else None
@@ -148,12 +155,17 @@ def features(frame) -> dict:
 
 @click.command(help=__doc__)
 @click.option("--ticker", callback=ticker_option, required=True)
-@click.option("--csv", type=click.Path(exists=True, dir_okay=False),
-              help="adjusted daily OHLCV CSV")
+@click.option(
+    "--csv",
+    type=click.Path(exists=True, dir_okay=False),
+    help="adjusted daily OHLCV CSV",
+)
 @click.option("--benchmark", callback=ticker_option)
 @click.option("--benchmark-csv", type=click.Path(exists=True, dir_okay=False))
 @click.option("--as-of", type=click.DateTime(formats=["%Y-%m-%d"]))
-@click.option("--max-age-days", type=click.IntRange(0, 30), default=7, show_default=True)
+@click.option(
+    "--max-age-days", type=click.IntRange(0, 30), default=7, show_default=True
+)
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
 def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> None:
     today = dt.datetime.now(dt.timezone.utc).date()
@@ -173,27 +185,34 @@ def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> 
         if len(common) < 21 or other.index[-1] != frame.index[-1]:
             raise ValueError("benchmark dates do not cover the latest session")
         benchmark = {
-            "ticker": benchmark_ticker, "source": "csv" if benchmark_csv
-            else "yfinance", "return_20": float(
-                other.loc[common[-1], "close"] /
-                other.loc[common[-21], "close"] - 1
+            "ticker": benchmark_ticker,
+            "source": "csv" if benchmark_csv else "yfinance",
+            "return_20": float(
+                other.loc[common[-1], "close"] / other.loc[common[-21], "close"] - 1
             ),
-            "series": [{"date": date, "close": float(value)}
-                       for date, value in other.close.tail(500).items()],
+            "series": [
+                {"date": date, "close": float(value)}
+                for date, value in other.close.tail(500).items()
+            ],
         }
     stale = (today - last_date).days > max_age_days
     if stale:
         warnings.append("stale prices; do not issue a hold/sale assessment")
     result = {
-        "schema_version": 1, "ticker": ticker,
-        "as_of": last_date.isoformat(), "requested_as_of": as_of.isoformat(),
+        "schema_version": 1,
+        "ticker": ticker,
+        "as_of": last_date.isoformat(),
+        "requested_as_of": as_of.isoformat(),
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "source": "csv" if csv else "yfinance",
         "adjustment": "adjusted OHLC; provider may revise historical values",
-        "features": features(frame), "benchmark": benchmark,
+        "features": features(frame),
+        "benchmark": benchmark,
         "data_quality": {"usable": not stale, "warnings": warnings},
-        "series": [{"date": date, "close": float(value)}
-                   for date, value in frame.close.tail(500).items()],
+        "series": [
+            {"date": date, "close": float(value)}
+            for date, value in frame.close.tail(500).items()
+        ],
     }
     write_json(output, result)
 

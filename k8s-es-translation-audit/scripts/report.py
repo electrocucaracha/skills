@@ -35,7 +35,7 @@ def _drift_evidence_count(entry) -> int:
 
 def _fmt_score(rel: str, scores: dict) -> str:
     s = scores.get(rel, {})
-    return f"score={s.get('score','?')} tier={s.get('tier','?')} weight={s.get('weight','?')}"
+    return f"score={s.get('score', '?')} tier={s.get('tier', '?')} weight={s.get('weight', '?')}"
 
 
 def build_report(d: dict, strictness: str) -> str:
@@ -51,14 +51,14 @@ def build_report(d: dict, strictness: str) -> str:
 
     # Quick wins: missing files already translated in ≥2 other langs AND < 200 lines
     missing_quick_wins = [
-        r for r in missing_by_priority
+        r
+        for r in missing_by_priority
         if scores.get(r, {}).get("cross_lang", 0) >= 2
         and scores.get(r, {}).get("lines", 9999) < 200
     ]
     # Quick wins: drifted files with ≤2 evidence items (minimal alignment work)
     drifted_quick_wins = [
-        e for e in drifted_by_priority
-        if _drift_evidence_count(e) <= 2
+        e for e in drifted_by_priority if _drift_evidence_count(e) <= 2
     ]
 
     lines: list[str] = []
@@ -72,28 +72,49 @@ def build_report(d: dict, strictness: str) -> str:
     A(f"- Repository: {d.get('repo', 'https://github.com/kubernetes/website')}")
     A(f"- Scope: {d.get('scope', 'full tree')}")
     A(f"- Strictness: {strictness}")
-    A("- Traffic signal: Hugo frontmatter `weight` + section tier (lower score = higher expected traffic)")
-    A("- Other languages detected: " + ", ".join(d.get("other_langs", []) or ["none detected"]))
+    A(
+        "- Traffic signal: Hugo frontmatter `weight` + section tier (lower score = higher expected traffic)"
+    )
+    A(
+        "- Other languages detected: "
+        + ", ".join(d.get("other_langs", []) or ["none detected"])
+    )
     A("")
 
     # ── methodology ─────────────────────────────────────────────────────────
     A("## Priority Score Methodology")
     A("")
-    A("Three signals are combined into a single composite score per file. Lower score = translate or fix first.")
+    A(
+        "Three signals are combined into a single composite score per file. Lower score = translate or fix first."
+    )
     A("")
     A("| Signal | Source | Effect |")
     A("|--------|--------|--------|")
-    A("| **Hugo page `weight`** | `weight:` frontmatter in `content/en/*.md` | Lower weight = higher nav position = more user exposure |")
-    A("| **Section tier** | Top-level directory | `concepts/`, `tasks/`, `tutorials/`, `docs/` → tier 1; `setup/`, `reference/` → tier 2; `blog/`, `community/` → tier 3 |")
-    A("| **Cross-language coverage** | Presence of same path in other `content/XX` dirs | Each additional language that translated this page reduces score by 200 pts (up to −1,600) |")
-    A("| **Quick-win bonus** | Line count of the English file | Files under 500 lines get up to −500 pts bonus — less effort to translate |")
+    A(
+        "| **Hugo page `weight`** | `weight:` frontmatter in `content/en/*.md` | Lower weight = higher nav position = more user exposure |"
+    )
+    A(
+        "| **Section tier** | Top-level directory | `concepts/`, `tasks/`, `tutorials/`, `docs/` → tier 1; `setup/`, `reference/` → tier 2; `blog/`, `community/` → tier 3 |"
+    )
+    A(
+        "| **Cross-language coverage** | Presence of same path in other `content/XX` dirs | Each additional language that translated this page reduces score by 200 pts (up to −1,600) |"
+    )
+    A(
+        "| **Quick-win bonus** | Line count of the English file | Files under 500 lines get up to −500 pts bonus — less effort to translate |"
+    )
     A("")
     A("```")
-    A("score = (tier × 10,000 + hugo_weight) − (min(cross_lang, 8) × 200) − max(0, 500 − file_lines)")
+    A(
+        "score = (tier × 10,000 + hugo_weight) − (min(cross_lang, 8) × 200) − max(0, 500 − file_lines)"
+    )
     A("```")
     A("")
-    A("> **Upgrade path to real GA data**: connect the [GA4 Data API](https://developers.google.com/analytics/devguides/reporting/data/v1)")
-    A("> with a service-account JSON for the `kubernetes.io` property and pass `screenPageViews` per URL path into the scoring step of `audit.py`.")
+    A(
+        "> **Upgrade path to real GA data**: connect the [GA4 Data API](https://developers.google.com/analytics/devguides/reporting/data/v1)"
+    )
+    A(
+        "> with a service-account JSON for the `kubernetes.io` property and pass `screenPageViews` per URL path into the scoring step of `audit.py`."
+    )
     A("")
 
     # ── summary ─────────────────────────────────────────────────────────────
@@ -112,7 +133,9 @@ def build_report(d: dict, strictness: str) -> str:
     # ── quick wins ───────────────────────────────────────────────────────────
     A("## Quick Wins")
     A("")
-    A("Files where the translation effort is minimal: already translated in other languages (reference available) and/or structurally close to aligned.")
+    A(
+        "Files where the translation effort is minimal: already translated in other languages (reference available) and/or structurally close to aligned."
+    )
     A("")
     A("### Missing pages: already translated by ≥2 other languages AND < 200 lines")
     A("")
@@ -121,7 +144,9 @@ def build_report(d: dict, strictness: str) -> str:
         A("|---|-------|-------|-------|--------------|")
         for i, rel in enumerate(missing_quick_wins[:20], 1):
             s = scores.get(rel, {})
-            A(f"| {i} | {s.get('score','?')} | {s.get('cross_lang','?')} | {s.get('lines','?')} | `content/en/{rel}` |")
+            A(
+                f"| {i} | {s.get('score', '?')} | {s.get('cross_lang', '?')} | {s.get('lines', '?')} | `content/en/{rel}` |"
+            )
     else:
         A("> None found matching criteria (cross_lang ≥ 2, lines < 200).")
     A("")
@@ -134,7 +159,9 @@ def build_report(d: dict, strictness: str) -> str:
             rel = entry[0]
             s = scores.get(rel, {})
             ev_count = _drift_evidence_count(entry)
-            A(f"| {i} | {s.get('score','?')} | {s.get('cross_lang','?')} | {ev_count} | `content/es/{rel}` |")
+            A(
+                f"| {i} | {s.get('score', '?')} | {s.get('cross_lang', '?')} | {ev_count} | `content/es/{rel}` |"
+            )
     else:
         A("> None found matching criteria (evidence_count ≤ 2).")
     A("")
@@ -142,13 +169,17 @@ def build_report(d: dict, strictness: str) -> str:
     # ── top-50 missing by traffic ────────────────────────────────────────────
     A(f"## Traffic-Prioritized: Top 50 Missing Translations")
     A("")
-    A("Files in `content/en` with no Spanish counterpart, sorted by composite score (highest priority first).")
+    A(
+        "Files in `content/en` with no Spanish counterpart, sorted by composite score (highest priority first)."
+    )
     A("")
     A("| # | Score | Tier | Wt | XLang | Lines | English file |")
     A("|---|-------|------|----|-------|-------|--------------|")
     for i, rel in enumerate(missing_by_priority[:50], 1):
         s = scores.get(rel, {})
-        A(f"| {i} | {s.get('score','?')} | {s.get('tier','?')} | {s.get('weight','?')} | {s.get('cross_lang','?')} | {s.get('lines','?')} | `content/en/{rel}` |")
+        A(
+            f"| {i} | {s.get('score', '?')} | {s.get('tier', '?')} | {s.get('weight', '?')} | {s.get('cross_lang', '?')} | {s.get('lines', '?')} | `content/en/{rel}` |"
+        )
     A("")
 
     # ── top-30 drifted by traffic ────────────────────────────────────────────
@@ -163,7 +194,9 @@ def build_report(d: dict, strictness: str) -> str:
         s = scores.get(rel, {})
         ev_count = _drift_evidence_count(entry)
         short_ev = (ev[0][:70].replace("|", "∪")) if ev else "—"
-        A(f"| {i} | {s.get('score','?')} | {s.get('tier','?')} | {s.get('weight','?')} | {s.get('cross_lang','?')} | {ev_count} | `content/es/{rel}` | {short_ev} |")
+        A(
+            f"| {i} | {s.get('score', '?')} | {s.get('tier', '?')} | {s.get('weight', '?')} | {s.get('cross_lang', '?')} | {ev_count} | `content/es/{rel}` | {short_ev} |"
+        )
     A("")
 
     # ── full missing list ────────────────────────────────────────────────────
@@ -173,7 +206,9 @@ def build_report(d: dict, strictness: str) -> str:
     A("")
     for rel in missing_by_priority[:60]:
         sc = scores.get(rel, {})
-        A(f"- [ ] `content/en/{rel}` → expected `content/es/{rel}` _(score {sc.get('score','?')} · xlang {sc.get('cross_lang','?')} · {sc.get('lines','?')} lines)_")
+        A(
+            f"- [ ] `content/en/{rel}` → expected `content/es/{rel}` _(score {sc.get('score', '?')} · xlang {sc.get('cross_lang', '?')} · {sc.get('lines', '?')} lines)_"
+        )
     A("")
     rest = missing_by_priority[60:]
     if rest:
@@ -196,23 +231,29 @@ def build_report(d: dict, strictness: str) -> str:
     A("")
 
     # ── full drifted list ────────────────────────────────────────────────────
-    A(f"## Drifted or Possibly Stale Pairs — Full List ({len(drifted)} files, traffic-sorted)")
+    A(
+        f"## Drifted or Possibly Stale Pairs — Full List ({len(drifted)} files, traffic-sorted)"
+    )
     A("")
     for rel, ev, *_ec in drifted_by_priority:
         s = scores.get(rel, {})
         ev_count = _ec[0] if _ec else len(ev)
-        A(f"### `content/es/{rel}` _(priority score {s.get('score','?')})_")
+        A(f"### `content/es/{rel}` _(priority score {s.get('score', '?')})_")
         A(f"- Source: `content/en/{rel}`")
         A(f"- Classification: drifted / possibly-stale")
-        A(f"- Traffic signal: tier={s.get('tier','?')} weight={s.get('weight','?')}")
-        A(f"- Cross-language coverage: {s.get('cross_lang','?')} other language(s) have this file")
+        A(f"- Traffic signal: tier={s.get('tier', '?')} weight={s.get('weight', '?')}")
+        A(
+            f"- Cross-language coverage: {s.get('cross_lang', '?')} other language(s) have this file"
+        )
         A(f"- Alignment gap: {ev_count} structural mismatch(es) to fix")
         A("- Evidence:")
         for ev_item in ev[:5]:
             A(f"  - {ev_item}")
         if len(ev) > 5:
             A(f"  - _(+{len(ev) - 5} more section mismatches)_")
-        A("- Suggested follow-up: Review and realign Spanish sections to match current English structure.")
+        A(
+            "- Suggested follow-up: Review and realign Spanish sections to match current English structure."
+        )
         A("")
 
     # ── style findings ───────────────────────────────────────────────────────
@@ -233,24 +274,36 @@ def build_report(d: dict, strictness: str) -> str:
     A("")
     A("### HIGH — Tier-1 missing translations")
     A("- **Severity:** high")
-    A("- **Title:** Translate highest-traffic tier-1 pages missing in content/es (batch 1)")
+    A(
+        "- **Title:** Translate highest-traffic tier-1 pages missing in content/es (batch 1)"
+    )
     A("- **Top affected files:**")
     for rel in missing_by_priority[:10]:
         A(f"  - `content/en/{rel}`")
-    A("- **Rationale:** Pages with weight ≤ 10 in tier-1 sections are the most user-facing content on kubernetes.io/es.")
+    A(
+        "- **Rationale:** Pages with weight ≤ 10 in tier-1 sections are the most user-facing content on kubernetes.io/es."
+    )
     A("")
     A("### HIGH — Drifted tier-1 pages")
     A("- **Severity:** high")
-    A("- **Title:** Realign top drifted Spanish pages to match current English structure")
+    A(
+        "- **Title:** Realign top drifted Spanish pages to match current English structure"
+    )
     A("- **Top affected files:**")
     for entry in drifted_by_priority[:8]:
         A(f"  - `content/es/{entry[0]}`")
-    A("- **Rationale:** Foundational pages (score ≤ 10,010) with confirmed structural drift — missing paragraphs or sections relative to English.")
+    A(
+        "- **Rationale:** Foundational pages (score ≤ 10,010) with confirmed structural drift — missing paragraphs or sections relative to English."
+    )
     A("")
     A("### HIGH — Orphaned Spanish pages")
     A("- **Severity:** high")
-    A(f"- **Title:** Remove or redirect {len(orphan)} orphaned content/es pages whose English source was deleted")
-    A("- **Rationale:** Orphaned pages surface outdated information with no English anchor.")
+    A(
+        f"- **Title:** Remove or redirect {len(orphan)} orphaned content/es pages whose English source was deleted"
+    )
+    A(
+        "- **Rationale:** Orphaned pages surface outdated information with no English anchor."
+    )
     A("")
     tier1_missing = sum(1 for r in missing if scores.get(r, {}).get("tier", 9) == 1)
     A("### MEDIUM — Remaining tier-1 missing pages")
@@ -264,21 +317,39 @@ def build_report(d: dict, strictness: str) -> str:
     A("")
     A("### LOW — Tier-2/3 missing pages + style normalization (STYLE-001, STYLE-003)")
     A("- **Severity:** low")
-    A("- **Title:** Track tier-2/3 missing pages; normalize anglicisms and Deployment term")
+    A(
+        "- **Title:** Track tier-2/3 missing pages; normalize anglicisms and Deployment term"
+    )
     A("")
 
     # ── next actions ─────────────────────────────────────────────────────────
     A("## Next Actions for Project Intake")
     A("")
-    A("- [ ] Open issue for top-10 highest-priority missing pages (lowest composite score, tier 1) — assign to l10n-spanish contributors")
-    A("- [ ] Tackle quick-win missing pages first: already translated in other languages AND < 200 lines — fastest path to visible coverage increase")
-    A("- [ ] Open issue for top-10 highest-priority drifted pairs (lowest composite score) — assign for realignment")
-    A("- [ ] Tackle quick-win drifted pages first: ≤ 2 evidence items — minimal structural diff to fix")
-    A(f"- [ ] Open batch issue for {len(orphan)} orphaned Spanish pages — assign to l10n-spanish team for deletion or redirect")
+    A(
+        "- [ ] Open issue for top-10 highest-priority missing pages (lowest composite score, tier 1) — assign to l10n-spanish contributors"
+    )
+    A(
+        "- [ ] Tackle quick-win missing pages first: already translated in other languages AND < 200 lines — fastest path to visible coverage increase"
+    )
+    A(
+        "- [ ] Open issue for top-10 highest-priority drifted pairs (lowest composite score) — assign for realignment"
+    )
+    A(
+        "- [ ] Tackle quick-win drifted pages first: ≤ 2 evidence items — minimal structural diff to fix"
+    )
+    A(
+        f"- [ ] Open batch issue for {len(orphan)} orphaned Spanish pages — assign to l10n-spanish team for deletion or redirect"
+    )
     A("- [ ] Group remaining tier-1 missing pages into a milestone tracking issue")
-    A("- [ ] Add STYLE-002 (imperative register) to localization style-guide backlog — impacts all future translations")
-    A("- [ ] Add STYLE-001 / STYLE-003 as style-guide clarification issues (lower urgency)")
-    A("- [ ] _(Optional)_ Replace Hugo-weight proxy with real GA4 page-view data and re-run scoring")
+    A(
+        "- [ ] Add STYLE-002 (imperative register) to localization style-guide backlog — impacts all future translations"
+    )
+    A(
+        "- [ ] Add STYLE-001 / STYLE-003 as style-guide clarification issues (lower urgency)"
+    )
+    A(
+        "- [ ] _(Optional)_ Replace Hugo-weight proxy with real GA4 page-view data and re-run scoring"
+    )
 
     return "\n".join(lines)
 

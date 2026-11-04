@@ -35,14 +35,17 @@ import math
 from pathlib import Path
 
 import click
-
 from analyze import read_json, ticker_option, ticker_value, write_json
 from decide import analysis_hash
 
 
 def identity(analysis: dict, decision: dict) -> str:
-    key = [analysis["ticker"], analysis["as_of"], decision["policy"],
-           decision["model"] or decision["requested_model"]]
+    key = [
+        analysis["ticker"],
+        analysis["as_of"],
+        decision["policy"],
+        decision["model"] or decision["requested_model"],
+    ]
     return hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()[:24]
 
 
@@ -58,12 +61,22 @@ def record(root: Path, analysis: dict, decision: dict) -> dict:
     if path.exists():
         previous = read_json(path)
         if previous["decision"]["analysis_hash"] != decision["analysis_hash"]:
-            raise ValueError("historical input revision; existing observation preserved")
-        return {"status": "existing", "id": record_id, "path": str(path),
-                "assessment": previous["decision"]["assessment"]}
+            raise ValueError(
+                "historical input revision; existing observation preserved"
+            )
+        return {
+            "status": "existing",
+            "id": record_id,
+            "path": str(path),
+            "assessment": previous["decision"]["assessment"],
+        }
     created = write_json(path, observation, immutable=True)
-    return {"status": "created" if created else "existing", "id": record_id,
-            "path": str(path), "sync": "sync_pending"}
+    return {
+        "status": "created" if created else "existing",
+        "id": record_id,
+        "path": str(path),
+        "sync": "sync_pending",
+    }
 
 
 def prices(series: list[dict]) -> dict[str, float]:
@@ -71,8 +84,10 @@ def prices(series: list[dict]) -> dict[str, float]:
     for item in series:
         date = dt.date.fromisoformat(item["date"]).isoformat()
         value = item["close"]
-        if date in result or not isinstance(value, (float, int)) or (
-            isinstance(value, bool) or not math.isfinite(value) or value <= 0
+        if (
+            date in result
+            or not isinstance(value, (float, int))
+            or (isinstance(value, bool) or not math.isfinite(value) or value <= 0)
         ):
             raise ValueError("invalid historical price series")
         result[date] = float(value)
@@ -97,34 +112,55 @@ def evaluate_one(observation: dict, latest: dict) -> dict | None:
     target = future[horizon - 1]
     issued = dt.datetime.fromisoformat(decision["issued_at"]).date().isoformat()
     if target <= issued:
-        return {"id": observation["id"], "status": "ineligible",
-                "reason": "target session not later than forecast issuance date"}
+        return {
+            "id": observation["id"],
+            "status": "ineligible",
+            "reason": "target session not later than forecast issuance date",
+        }
     if analysis["source"] != latest["source"]:
         return {"id": observation["id"], "status": "source_changed"}
-    if any(not math.isclose(original[date], current[date], rel_tol=1e-6)
-           for date in original.keys() & current.keys()):
-        return {"id": observation["id"], "status": "historical_revision",
-                "reason": "adjusted history revised; no score produced"}
+    if any(
+        not math.isclose(original[date], current[date], rel_tol=1e-6)
+        for date in original.keys() & current.keys()
+    ):
+        return {
+            "id": observation["id"],
+            "status": "historical_revision",
+            "reason": "adjusted history revised; no score produced",
+        }
     realized = current[target] / original[start] - 1
     event = realized <= decision["policy"]["downside_threshold"]
     probability = forecast["probability"]
     result = {
-        "id": observation["id"], "status": "evaluated", "target_date": target,
-        "policy": decision["policy"], "model": decision["model"],
-        "realized_return": realized, "downside_event": event,
+        "id": observation["id"],
+        "status": "evaluated",
+        "target_date": target,
+        "policy": decision["policy"],
+        "model": decision["model"],
+        "realized_return": realized,
+        "downside_event": event,
         "forecast_probability": probability,
         "brier_score": (probability - int(event)) ** 2,
-        "benchmark_return": None, "excess_return": None,
+        "benchmark_return": None,
+        "excess_return": None,
         "cost_assumption": "gross adjusted-price return; no trades simulated",
     }
     before, after = analysis.get("benchmark"), latest.get("benchmark")
-    if before and after and before["ticker"] == after["ticker"] and (
-        before["source"] == after["source"]
+    if (
+        before
+        and after
+        and before["ticker"] == after["ticker"]
+        and (before["source"] == after["source"])
     ):
         base, updated = prices(before["series"]), prices(after["series"])
-        if start in base and start in updated and target in updated and all(
-            math.isclose(base[date], updated[date], rel_tol=1e-6)
-            for date in base.keys() & updated.keys()
+        if (
+            start in base
+            and start in updated
+            and target in updated
+            and all(
+                math.isclose(base[date], updated[date], rel_tol=1e-6)
+                for date in base.keys() & updated.keys()
+            )
         ):
             result["benchmark_return"] = updated[target] / base[start] - 1
             result["excess_return"] = realized - result["benchmark_return"]
@@ -148,8 +184,14 @@ def evaluate(root: Path, latest: dict) -> dict:
             pending.append(outcome)
             continue
         write_json(target, outcome, immutable=True)
-        updates.append({"path": str(target), "id": observation["id"],
-                        "status": outcome["status"], "sync": "sync_pending"})
+        updates.append(
+            {
+                "path": str(target),
+                "id": observation["id"],
+                "status": outcome["status"],
+                "sync": "sync_pending",
+            }
+        )
     return {"updates": updates, "deferred": pending}
 
 
@@ -158,11 +200,17 @@ def context(root: Path, ticker: str) -> dict:
     for path in (root / ticker / "observations").glob("*.json"):
         observation = read_json(path)
         analysis, decision = observation["analysis"], observation["decision"]
-        observations.append({"id": observation["id"], "path": str(path),
-                             "as_of": analysis["as_of"],
-                             "features": analysis["features"],
-                             "assessment": decision["assessment"],
-                             "policy": decision["policy"], "model": decision["model"]})
+        observations.append(
+            {
+                "id": observation["id"],
+                "path": str(path),
+                "as_of": analysis["as_of"],
+                "features": analysis["features"],
+                "assessment": decision["assessment"],
+                "policy": decision["policy"],
+                "model": decision["model"],
+            }
+        )
     observations.sort(key=lambda item: (item["as_of"], item["id"]))
     groups = {}
     for path in (root / ticker / "evaluations").glob("*.json"):
@@ -171,12 +219,19 @@ def context(root: Path, ticker: str) -> dict:
             continue
         key = json.dumps([outcome["policy"], outcome["model"]], sort_keys=True)
         groups.setdefault(key, []).append(outcome["brier_score"])
-    return {"ticker": ticker, "observations": observations[-10:],
-            "evaluation_groups": [
-                {"policy": json.loads(key)[0], "model": json.loads(key)[1],
-                 "count": len(scores), "mean_brier": sum(scores) / len(scores)}
-                for key, scores in groups.items()
-            ]}
+    return {
+        "ticker": ticker,
+        "observations": observations[-10:],
+        "evaluation_groups": [
+            {
+                "policy": json.loads(key)[0],
+                "model": json.loads(key)[1],
+                "count": len(scores),
+                "mean_brier": sum(scores) / len(scores),
+            }
+            for key, scores in groups.items()
+        ],
+    }
 
 
 @click.group(help=__doc__)
@@ -195,7 +250,9 @@ def record_command(root, analysis, decision) -> None:
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
 
 
-@main.command("evaluate", help="Evaluate matured forecasts without modifying observations.")
+@main.command(
+    "evaluate", help="Evaluate matured forecasts without modifying observations."
+)
 @click.option("--analysis", type=click.Path(exists=True, dir_okay=False), required=True)
 @click.pass_obj
 def evaluate_command(root, analysis) -> None:
@@ -203,7 +260,9 @@ def evaluate_command(root, analysis) -> None:
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
 
 
-@main.command("context", help="Export recent observations and grouped evaluation scores.")
+@main.command(
+    "context", help="Export recent observations and grouped evaluation scores."
+)
 @click.option("--ticker", callback=ticker_option, required=True)
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
 @click.pass_obj

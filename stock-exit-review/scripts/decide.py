@@ -38,14 +38,21 @@ from typing import Annotated, Literal, Self
 
 import click
 import httpx
+from analyze import read_json, ticker_value, write_json
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from analyze import read_json, ticker_value, write_json
-
 FEATURE_KEYS = (
-    "close", "sma_20", "sma_50", "rsi_14", "macd_histogram",
-    "atr_fraction", "return_20", "annualized_volatility",
-    "max_drawdown", "drawdown_from_peak", "volume_ratio_20",
+    "close",
+    "sma_20",
+    "sma_50",
+    "rsi_14",
+    "macd_histogram",
+    "atr_fraction",
+    "return_20",
+    "annualized_volatility",
+    "max_drawdown",
+    "drawdown_from_peak",
+    "volume_ratio_20",
 )
 
 QUESTIONS = {
@@ -85,18 +92,27 @@ QUESTIONS = {
 
 
 def analysis_hash(analysis: dict) -> str:
-    payload = {key: value for key, value in analysis.items()
-               if key not in ("captured_at", "requested_as_of")}
-    return hashlib.sha256(json.dumps(
-        payload, sort_keys=True, allow_nan=False
-    ).encode()).hexdigest()
+    payload = {
+        key: value
+        for key, value in analysis.items()
+        if key not in ("captured_at", "requested_as_of")
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, allow_nan=False).encode()
+    ).hexdigest()
 
 
 def market_features(features: dict) -> dict:
     selected = {key: features[key] for key in FEATURE_KEYS}
-    if not all(value is None or (isinstance(value, (int, float)) and
-               not isinstance(value, bool) and math.isfinite(value))
-               for value in selected.values()):
+    if not all(
+        value is None
+        or (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(value)
+        )
+        for value in selected.values()
+    ):
         raise ValueError("invalid numeric market features")
     return selected
 
@@ -140,15 +156,21 @@ class JevResponse(BaseModel):
 
 
 def query_jev(state: dict, model: str, token: str) -> dict:
-    body = json.dumps({"state": state, "model": model,
-                       "questions": QUESTIONS}, allow_nan=False).encode()
+    body = json.dumps(
+        {"state": state, "model": model, "questions": QUESTIONS}, allow_nan=False
+    ).encode()
     tls = ssl.create_default_context()
     tls.minimum_version = ssl.TLSVersion.TLSv1_3
     with httpx.Client(timeout=30, follow_redirects=False, verify=tls) as client:
         with client.stream(
-            "POST", "https://api.typesafe.ai/v1/systemone", content=body,
-            headers={"Authorization": "Bearer " + token,
-                     "Content-Type": "application/json", "Accept": "application/json"},
+            "POST",
+            "https://api.typesafe.ai/v1/systemone",
+            content=body,
+            headers={
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
         ) as response:
             response.raise_for_status()
             payload = bytearray()
@@ -174,34 +196,58 @@ def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
 
 
 @click.command(help=__doc__)
-@click.option("--analysis", "analysis_path",
-              type=click.Path(exists=True, dir_okay=False), required=True)
+@click.option(
+    "--analysis",
+    "analysis_path",
+    type=click.Path(exists=True, dir_okay=False),
+    required=True,
+)
 @click.option("--context", "context_path", type=click.Path(exists=True, dir_okay=False))
 @click.option("--horizon", type=click.IntRange(1, 252), default=20, show_default=True)
-@click.option("--downside-threshold", type=click.FloatRange(-1, 0, min_open=True,
-              max_open=True), default=-0.05, show_default=True)
-@click.option("--min-confidence", type=click.FloatRange(0, 1), default=0.6,
-              show_default=True)
+@click.option(
+    "--downside-threshold",
+    type=click.FloatRange(-1, 0, min_open=True, max_open=True),
+    default=-0.05,
+    show_default=True,
+)
+@click.option(
+    "--min-confidence", type=click.FloatRange(0, 1), default=0.6, show_default=True
+)
 @click.option("--model", envvar="JEV_MODEL", default="jev-latest", show_default=True)
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
-def main(analysis_path, context_path, horizon, downside_threshold,
-         min_confidence, model, output) -> None:
+def main(
+    analysis_path,
+    context_path,
+    horizon,
+    downside_threshold,
+    min_confidence,
+    model,
+    output,
+) -> None:
     analysis = read_json(analysis_path)
     ticker_value(analysis["ticker"])
     as_of = dt.date.fromisoformat(analysis["as_of"])
     features = market_features(analysis["features"])
-    policy = {"version": "technical-v1", "horizon_sessions": horizon,
-              "downside_threshold": downside_threshold,
-              "min_confidence": min_confidence}
+    policy = {
+        "version": "technical-v1",
+        "horizon_sessions": horizon,
+        "downside_threshold": downside_threshold,
+        "min_confidence": min_confidence,
+    }
     context = read_json(context_path) if context_path else {}
     market_history = []
     if context.get("ticker") == analysis["ticker"]:
         for item in context.get("observations", [])[-5:]:
             if item["as_of"] < analysis["as_of"]:
-                market_history.append({"as_of": item["as_of"],
-                                       "features": market_features(item["features"])})
+                market_history.append(
+                    {
+                        "as_of": item["as_of"],
+                        "features": market_features(item["features"]),
+                    }
+                )
     state = {
-        "ticker": analysis["ticker"], "as_of": analysis["as_of"],
+        "ticker": analysis["ticker"],
+        "as_of": analysis["as_of"],
         "features": features,
         "horizon_sessions": horizon,
         "downside_threshold": downside_threshold,
@@ -209,16 +255,26 @@ def main(analysis_path, context_path, horizon, downside_threshold,
         "coverage": "technical price/volume only; no fundamentals or news",
     }
     result = {
-        "schema_version": 1, "ticker": analysis["ticker"],
-        "as_of": analysis["as_of"], "analysis_hash": analysis_hash(analysis),
+        "schema_version": 1,
+        "ticker": analysis["ticker"],
+        "as_of": analysis["as_of"],
+        "analysis_hash": analysis_hash(analysis),
         "issued_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "policy": policy, "requested_model": model, "model": None,
-        "assessment": "insufficient_evidence", "answers": {}, "forecast": None,
+        "policy": policy,
+        "requested_model": model,
+        "model": None,
+        "assessment": "insufficient_evidence",
+        "answers": {},
+        "forecast": None,
         "reasons": [],
     }
     today = dt.datetime.now(dt.timezone.utc).date()
     token = os.getenv("TYPESAFE_API_KEY")
-    if analysis["data_quality"]["usable"] is not True or (today - as_of).days > 7 or as_of > today:
+    if (
+        analysis["data_quality"]["usable"] is not True
+        or (today - as_of).days > 7
+        or as_of > today
+    ):
         result["reasons"] = ["stale or unusable market data"]
     elif not token:
         result["reasons"] = ["TYPESAFE_API_KEY unavailable"]
@@ -232,11 +288,14 @@ def main(analysis_path, context_path, horizon, downside_threshold,
             )
             downside = result["answers"]["downside"]
             distribution = downside["probabilities"]
-            if distribution["unknown"] <= 0.1 and downside["confidence"] >= min_confidence:
+            if (
+                distribution["unknown"] <= 0.1
+                and downside["confidence"] >= min_confidence
+            ):
                 result["forecast"] = {
                     "event": "terminal_adjusted_return_lte_threshold",
-                    "probability": distribution["downside"] /
-                    (distribution["downside"] + distribution["not_downside"]),
+                    "probability": distribution["downside"]
+                    / (distribution["downside"] + distribution["not_downside"]),
                     "unknown_probability": distribution["unknown"],
                     "conditional_on_classifiable": True,
                     "validated_for_finance": False,
@@ -245,7 +304,9 @@ def main(analysis_path, context_path, horizon, downside_threshold,
             result["assessment"] = "insufficient_evidence"
             result["answers"] = {}
             result["forecast"] = None
-            result["reasons"] = ["Jev unavailable or invalid response; no automatic retry"]
+            result["reasons"] = [
+                "Jev unavailable or invalid response; no automatic retry"
+            ]
     write_json(output, result)
 
 
@@ -253,4 +314,6 @@ if __name__ == "__main__":
     try:
         main()
     except (ValueError, KeyError, OSError, TypeError) as error:
-        raise SystemExit("decision input/output failed: " + type(error).__name__) from None
+        raise SystemExit(
+            "decision input/output failed: " + type(error).__name__
+        ) from None

@@ -22,7 +22,6 @@ from pathlib import Path
 
 import click
 
-
 # ---------------------------------------------------------------------------
 # Section-level traffic tier for kubernetes.io (empirical)
 # Lower tier = higher expected traffic.
@@ -131,9 +130,7 @@ def parse_structure(text: str) -> dict[str, dict]:
     return result
 
 
-def compare_structures(
-    en_struct: dict, es_struct: dict
-) -> tuple[str, list[str]]:
+def compare_structures(en_struct: dict, es_struct: dict) -> tuple[str, list[str]]:
     evidence: list[str] = []
     es_headings = set(es_struct.keys())
     for h in en_struct:
@@ -156,7 +153,8 @@ def _discover_other_langs(repo: Path) -> list[Path]:
     content_dir = repo / "content"
     try:
         return [
-            d for d in content_dir.iterdir()
+            d
+            for d in content_dir.iterdir()
             if d.is_dir() and d.name not in ("en", "es")
         ]
     except Exception:
@@ -193,46 +191,52 @@ def run_style_analysis(es_root: Path, paired: list[str]) -> list[dict]:
             depl_files.append(rel)
 
     if accent_files and plain_files:
-        findings.append({
-            "id": "STYLE-001",
-            "impact": "minor",
-            "evidence": (accent_files[:2] + plain_files[:2]),
-            "observation": "Mixed usage of 'clúster' (accented) vs 'cluster' (unaccented) across content/es files.",
-            "recommendation": (
-                "Standardize on 'clúster' per RAE guidelines or 'cluster' per Kubernetes "
-                "project convention. Document the chosen form in the localization style guide."
-            ),
-        })
+        findings.append(
+            {
+                "id": "STYLE-001",
+                "impact": "minor",
+                "evidence": (accent_files[:2] + plain_files[:2]),
+                "observation": "Mixed usage of 'clúster' (accented) vs 'cluster' (unaccented) across content/es files.",
+                "recommendation": (
+                    "Standardize on 'clúster' per RAE guidelines or 'cluster' per Kubernetes "
+                    "project convention. Document the chosen form in the localization style guide."
+                ),
+            }
+        )
 
     if tu_files and usted_files:
-        findings.append({
-            "id": "STYLE-002",
-            "impact": "major",
-            "evidence": (tu_files[:2] + usted_files[:2]),
-            "observation": (
-                "Mixed imperative register: some files use 'tú' forms (ejecuta, usa) "
-                "while others use 'usted' forms (ejecute, use)."
-            ),
-            "recommendation": (
-                "Align all docs to 'usted' form as specified in the Kubernetes Spanish "
-                "localization guide."
-            ),
-        })
+        findings.append(
+            {
+                "id": "STYLE-002",
+                "impact": "major",
+                "evidence": (tu_files[:2] + usted_files[:2]),
+                "observation": (
+                    "Mixed imperative register: some files use 'tú' forms (ejecuta, usa) "
+                    "while others use 'usted' forms (ejecute, use)."
+                ),
+                "recommendation": (
+                    "Align all docs to 'usted' form as specified in the Kubernetes Spanish "
+                    "localization guide."
+                ),
+            }
+        )
 
     if desp_files and depl_files:
-        findings.append({
-            "id": "STYLE-003",
-            "impact": "minor",
-            "evidence": (desp_files[:2] + depl_files[:2]),
-            "observation": (
-                "Inconsistent translation of 'Deployment': some files keep the English "
-                "term, others use 'despliegue'."
-            ),
-            "recommendation": (
-                "Keep 'Deployment' as a proper noun when referring to the API object; "
-                "use 'despliegue' only for the general concept."
-            ),
-        })
+        findings.append(
+            {
+                "id": "STYLE-003",
+                "impact": "minor",
+                "evidence": (desp_files[:2] + depl_files[:2]),
+                "observation": (
+                    "Inconsistent translation of 'Deployment': some files keep the English "
+                    "term, others use 'despliegue'."
+                ),
+                "recommendation": (
+                    "Keep 'Deployment' as a proper noun when referring to the API object; "
+                    "use 'despliegue' only for the general concept."
+                ),
+            }
+        )
 
     return findings
 

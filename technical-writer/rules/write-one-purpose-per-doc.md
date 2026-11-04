@@ -54,7 +54,7 @@ Nobody finds what they need quickly.
 
 Split into four focused documents:
 
-```
+```text
 docs/
 ├── tutorials/authentication.md        → "Build authenticated requests step by step"
 ├── guides/add-oauth-to-your-app.md    → "How to add OAuth to your app"

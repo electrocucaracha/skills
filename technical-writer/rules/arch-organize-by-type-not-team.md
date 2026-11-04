@@ -14,7 +14,7 @@ Content-type organization maps to how developers actually use documentation.
 
 ## Incorrect
 
-```
+```text
 docs/
 ├── platform-team/
 │   ├── authentication.md
@@ -33,7 +33,7 @@ A developer deploying a containerized app with CDN needs to navigate three team 
 
 ## Correct
 
-```
+```text
 docs/
 ├── tutorials/
 │   ├── deploy-first-app.md

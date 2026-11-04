@@ -32,19 +32,18 @@
 import copy
 import datetime as dt
 import json
-from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
-
-from click.testing import CliRunner
-import pandas as pd
 
 import analyze
 import decide
 import history
+import pandas as pd
 import preflight
+from click.testing import CliRunner
 
 
 class WorkflowChecks(unittest.TestCase):
@@ -53,33 +52,69 @@ class WorkflowChecks(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.analysis = {
-            "ticker": "AAPL", "as_of": "2026-10-26", "source": "csv",
+            "ticker": "AAPL",
+            "as_of": "2026-10-26",
+            "source": "csv",
             "series": [{"date": "2026-10-26", "close": 100}],
             "features": dict.fromkeys(decide.FEATURE_KEYS, 1.0),
             "data_quality": {"usable": True},
         }
         self.decision = {
-            "ticker": "AAPL", "as_of": "2026-10-26",
+            "ticker": "AAPL",
+            "as_of": "2026-10-26",
             "analysis_hash": decide.analysis_hash(self.analysis),
-            "policy": {"version": "technical-v1", "horizon_sessions": 2,
-                       "downside_threshold": -0.05, "min_confidence": 0.6},
-            "model": "offline-fixture", "requested_model": "offline-fixture",
-            "assessment": "hold", "issued_at": "2026-10-27T01:00:00+00:00",
+            "policy": {
+                "version": "technical-v1",
+                "horizon_sessions": 2,
+                "downside_threshold": -0.05,
+                "min_confidence": 0.6,
+            },
+            "model": "offline-fixture",
+            "requested_model": "offline-fixture",
+            "assessment": "hold",
+            "issued_at": "2026-10-27T01:00:00+00:00",
             "forecast": {"probability": 0.8},
         }
         self.answers = {
-            "trend": {"type": "choice", "confidence": 0.85, "choice": "improving",
-                      "probabilities": {"improving": 0.9, "deteriorating": 0.05, "mixed": 0.05}},
-            "risk": {"type": "choice", "confidence": 0.85, "choice": "ordinary",
-                     "probabilities": {"ordinary": 0.9, "elevated": 0.05, "unknown": 0.05}},
-            "downside": {"type": "choice", "confidence": 0.85, "choice": "not_downside",
-                         "probabilities": {"downside": 0.05, "not_downside": 0.9, "unknown": 0.05}},
+            "trend": {
+                "type": "choice",
+                "confidence": 0.85,
+                "choice": "improving",
+                "probabilities": {
+                    "improving": 0.9,
+                    "deteriorating": 0.05,
+                    "mixed": 0.05,
+                },
+            },
+            "risk": {
+                "type": "choice",
+                "confidence": 0.85,
+                "choice": "ordinary",
+                "probabilities": {"ordinary": 0.9, "elevated": 0.05, "unknown": 0.05},
+            },
+            "downside": {
+                "type": "choice",
+                "confidence": 0.85,
+                "choice": "not_downside",
+                "probabilities": {
+                    "downside": 0.05,
+                    "not_downside": 0.9,
+                    "unknown": 0.05,
+                },
+            },
         }
 
     def test_indicators_and_csv_validation(self):
         close = pd.Series(range(100, 200), dtype=float)
-        frame = pd.DataFrame({"open": close, "high": close + 1, "low": close - 1,
-                              "close": close, "volume": 1000})
+        frame = pd.DataFrame(
+            {
+                "open": close,
+                "high": close + 1,
+                "low": close - 1,
+                "close": close,
+                "volume": 1000,
+            }
+        )
         frame.index = pd.bdate_range(end="2026-10-30", periods=100)
         self.assertEqual(analyze.features(frame)["sma_20"], 189.5)
         self.assertEqual(analyze.features(frame)["max_drawdown"], 0)
@@ -88,11 +123,23 @@ class WorkflowChecks(unittest.TestCase):
         loaded = analyze.load_prices("AAPL", str(path), dt.date(2026, 10, 30))
         self.assertTrue(loaded.index.is_monotonic_increasing)
         output = self.root / "analysis.json"
-        invocation = CliRunner().invoke(analyze.main, [
-            "--ticker", "aapl", "--csv", str(path), "--as-of", "2026-10-30",
-            "--benchmark", "SPY", "--benchmark-csv", str(path),
-            "--output", str(output),
-        ])
+        invocation = CliRunner().invoke(
+            analyze.main,
+            [
+                "--ticker",
+                "aapl",
+                "--csv",
+                str(path),
+                "--as-of",
+                "2026-10-30",
+                "--benchmark",
+                "SPY",
+                "--benchmark-csv",
+                str(path),
+                "--output",
+                str(output),
+            ],
+        )
         self.assertEqual(invocation.exit_code, 0, invocation.output)
         self.assertEqual(analyze.read_json(output)["ticker"], "AAPL")
         benchmark = analyze.read_json(output)["benchmark"]
@@ -105,20 +152,27 @@ class WorkflowChecks(unittest.TestCase):
     def test_assessment_branches(self):
         self.assertEqual(decide.assessment(self.answers, 0.6)[0], "hold")
         self.answers["risk"]["choice"] = "elevated"
-        self.assertEqual(decide.assessment(self.answers, 0.6)[0], "insufficient_evidence")
+        self.assertEqual(
+            decide.assessment(self.answers, 0.6)[0], "insufficient_evidence"
+        )
         self.answers["trend"]["choice"] = "deteriorating"
         self.answers["downside"]["choice"] = "downside"
         self.assertEqual(decide.assessment(self.answers, 0.6)[0], "review_exit")
         self.answers["trend"]["confidence"] = 0.1
-        self.assertEqual(decide.assessment(self.answers, 0.6)[0], "insufficient_evidence")
+        self.assertEqual(
+            decide.assessment(self.answers, 0.6)[0], "insufficient_evidence"
+        )
 
     def test_preflight_imports_and_failure_bounds(self):
         run_dir, history_root = self.root / "run", self.root / "history"
-        with patch("preflight.shutil.which", return_value="/usr/bin/uv"), patch(
-            "preflight.subprocess.run"
-        ) as probe:
+        with (
+            patch("preflight.shutil.which", return_value="/usr/bin/uv"),
+            patch("preflight.subprocess.run") as probe,
+        ):
             probe.return_value = subprocess.CompletedProcess([], 0, b"", b"")
-            self.assertEqual(preflight.check_runtime(run_dir, history_root, 10)["status"], "ready")
+            self.assertEqual(
+                preflight.check_runtime(run_dir, history_root, 10)["status"], "ready"
+            )
             self.assertEqual(probe.call_args.kwargs["timeout"], 10)
             self.assertEqual(probe.call_args.kwargs["cwd"], run_dir)
             command = probe.call_args.args[0]
@@ -128,23 +182,32 @@ class WorkflowChecks(unittest.TestCase):
             probe.return_value = subprocess.CompletedProcess(
                 [], 1, b"", b"numpy.so: failed to map segment from shared object"
             )
-            self.assertEqual(preflight.check_runtime(run_dir, history_root, 10)["reason"],
-                             "native_import_failed")
+            self.assertEqual(
+                preflight.check_runtime(run_dir, history_root, 10)["reason"],
+                "native_import_failed",
+            )
             probe.side_effect = subprocess.TimeoutExpired(command, 10)
-            self.assertEqual(preflight.check_runtime(run_dir, history_root, 10)["reason"],
-                             "dependency_probe_timeout")
+            self.assertEqual(
+                preflight.check_runtime(run_dir, history_root, 10)["reason"],
+                "dependency_probe_timeout",
+            )
             self.assertEqual(probe.call_count, 3)
 
     def test_preflight_paths_and_missing_uv(self):
         with self.assertRaises(ValueError):
             preflight.check_runtime(Path("relative"), self.root, 10)
         with self.assertRaises(ValueError):
-            preflight.check_runtime(Path(preflight.__file__).resolve().parent, self.root, 10)
-        with patch("preflight.shutil.which", return_value=None), patch(
-            "preflight.subprocess.run"
-        ) as probe:
-            self.assertEqual(preflight.check_runtime(self.root, self.root, 10)["reason"],
-                             "uv_missing")
+            preflight.check_runtime(
+                Path(preflight.__file__).resolve().parent, self.root, 10
+            )
+        with (
+            patch("preflight.shutil.which", return_value=None),
+            patch("preflight.subprocess.run") as probe,
+        ):
+            self.assertEqual(
+                preflight.check_runtime(self.root, self.root, 10)["reason"],
+                "uv_missing",
+            )
             probe.assert_not_called()
 
     def test_jev_transport_and_validation(self):
@@ -152,7 +215,9 @@ class WorkflowChecks(unittest.TestCase):
         with patch("decide.httpx.Client") as client:
             handle = client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value
             handle.iter_bytes.return_value = [json.dumps(response).encode()]
-            self.assertEqual(decide.query_jev({}, "fixture", "offline-placeholder"), response)
+            self.assertEqual(
+                decide.query_jev({}, "fixture", "offline-placeholder"), response
+            )
             self.assertEqual(client.call_args.kwargs["timeout"], 30)
             self.assertFalse(client.call_args.kwargs["follow_redirects"])
             self.answers["risk"]["probabilities"]["ordinary"] = 2
@@ -163,7 +228,10 @@ class WorkflowChecks(unittest.TestCase):
     def test_missing_credentials_and_mocked_forecast(self):
         today = dt.datetime.now(dt.timezone.utc).date()
         self.analysis["as_of"] = (today - dt.timedelta(days=1)).isoformat()
-        input_path, output_path = self.root / "analysis.json", self.root / "decision.json"
+        input_path, output_path = (
+            self.root / "analysis.json",
+            self.root / "decision.json",
+        )
         analyze.write_json(input_path, self.analysis)
         arguments = ["--analysis", str(input_path), "--output", str(output_path)]
         runner = CliRunner()
@@ -172,10 +240,18 @@ class WorkflowChecks(unittest.TestCase):
                 invocation = runner.invoke(decide.main, arguments)
                 self.assertEqual(invocation.exit_code, 0, invocation.output)
                 remote.assert_not_called()
-        self.assertEqual(analyze.read_json(output_path)["assessment"], "insufficient_evidence")
-        with patch.dict(
-            "os.environ", {"TYPESAFE_API_KEY": "offline-placeholder"}, clear=True
-        ), patch("decide.query_jev", return_value={"model": "fixture", "answers": self.answers}):
+        self.assertEqual(
+            analyze.read_json(output_path)["assessment"], "insufficient_evidence"
+        )
+        with (
+            patch.dict(
+                "os.environ", {"TYPESAFE_API_KEY": "offline-placeholder"}, clear=True
+            ),
+            patch(
+                "decide.query_jev",
+                return_value={"model": "fixture", "answers": self.answers},
+            ),
+        ):
             invocation = runner.invoke(decide.main, arguments)
             self.assertEqual(invocation.exit_code, 0, invocation.output)
         result = analyze.read_json(output_path)
@@ -196,27 +272,55 @@ class WorkflowChecks(unittest.TestCase):
         for command in (analyze.main, decide.main, history.main):
             invocation = runner.invoke(command, ["--help"])
             self.assertEqual(invocation.exit_code, 0, invocation.output)
-        invocation = runner.invoke(analyze.main, [
-            "--ticker", "../private", "--output", str(self.root / "out.json"),
-        ])
+        invocation = runner.invoke(
+            analyze.main,
+            [
+                "--ticker",
+                "../private",
+                "--output",
+                str(self.root / "out.json"),
+            ],
+        )
         self.assertEqual(invocation.exit_code, 2)
-        invocation = runner.invoke(analyze.main, [
-            "--ticker", "AAPL", "--max-age-days", "31",
-            "--output", str(self.root / "out.json"),
-        ])
+        invocation = runner.invoke(
+            analyze.main,
+            [
+                "--ticker",
+                "AAPL",
+                "--max-age-days",
+                "31",
+                "--output",
+                str(self.root / "out.json"),
+            ],
+        )
         self.assertEqual(invocation.exit_code, 2)
         input_path = self.root / "analysis.json"
         analyze.write_json(input_path, self.analysis)
-        invocation = runner.invoke(decide.main, [
-            "--analysis", str(input_path), "--horizon", "0",
-            "--output", str(self.root / "out.json"),
-        ])
+        invocation = runner.invoke(
+            decide.main,
+            [
+                "--analysis",
+                str(input_path),
+                "--horizon",
+                "0",
+                "--output",
+                str(self.root / "out.json"),
+            ],
+        )
         self.assertEqual(invocation.exit_code, 2)
         output = self.root / "context.json"
-        invocation = runner.invoke(history.main, [
-            "--root", str(self.root), "context", "--ticker", "aapl",
-            "--output", str(output),
-        ])
+        invocation = runner.invoke(
+            history.main,
+            [
+                "--root",
+                str(self.root),
+                "context",
+                "--ticker",
+                "aapl",
+                "--output",
+                str(output),
+            ],
+        )
         self.assertEqual(invocation.exit_code, 0, invocation.output)
         self.assertEqual(analyze.read_json(output)["ticker"], "AAPL")
 
@@ -225,27 +329,42 @@ class WorkflowChecks(unittest.TestCase):
         self.assertEqual(first["status"], "created")
         self.analysis["captured_at"] = "new capture"
         self.analysis["requested_as_of"] = "2026-10-27"
-        self.assertEqual(history.record(self.root, self.analysis, self.decision)["status"], "existing")
-        self.assertEqual(history.context(self.root, "AAPL")["observations"][0]["id"], first["id"])
+        self.assertEqual(
+            history.record(self.root, self.analysis, self.decision)["status"],
+            "existing",
+        )
+        self.assertEqual(
+            history.context(self.root, "AAPL")["observations"][0]["id"], first["id"]
+        )
         self.analysis["series"][0]["close"] = 101
         self.decision["analysis_hash"] = decide.analysis_hash(self.analysis)
         with self.assertRaises(ValueError):
             history.record(self.root, self.analysis, self.decision)
 
     def test_maturity_scoring_revisions_and_leakage(self):
-        observation = {"id": "fixture", "analysis": self.analysis, "decision": self.decision}
+        observation = {
+            "id": "fixture",
+            "analysis": self.analysis,
+            "decision": self.decision,
+        }
         latest = copy.deepcopy(self.analysis)
         self.assertIsNone(history.evaluate_one(observation, latest))
         latest["as_of"] = "2026-10-28"
-        latest["series"] += [{"date": "2026-10-27", "close": 98},
-                             {"date": "2026-10-28", "close": 90}]
+        latest["series"] += [
+            {"date": "2026-10-27", "close": 98},
+            {"date": "2026-10-28", "close": 90},
+        ]
         outcome = history.evaluate_one(observation, latest)
         self.assertTrue(outcome["downside_event"])
         self.assertAlmostEqual(outcome["brier_score"], 0.04)
         latest["series"][0]["close"] = 101
-        self.assertEqual(history.evaluate_one(observation, latest)["status"], "historical_revision")
+        self.assertEqual(
+            history.evaluate_one(observation, latest)["status"], "historical_revision"
+        )
         self.decision["issued_at"] = "2026-10-28T23:00:00+00:00"
-        self.assertEqual(history.evaluate_one(observation, latest)["status"], "ineligible")
+        self.assertEqual(
+            history.evaluate_one(observation, latest)["status"], "ineligible"
+        )
 
 
 if __name__ == "__main__":

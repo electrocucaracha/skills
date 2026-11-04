@@ -35,8 +35,6 @@ monitoring.AlertRule.create( metric="cpu_usage", threshold=90, recipients=["ops@
 ```
 ````
 
-````
-
 This assumes the reader already knows what alerts are, why they'd want them, and how their system should handle them. That's a how-to guide labeled as a tutorial.
 
 ## Correct
@@ -50,17 +48,20 @@ In this tutorial, you'll build a chat app that sends and receives messages in re
 You'll learn how WebSockets work and how to handle connection lifecycle.
 
 ## What you'll build
+
 A simple chat server and browser client.
 By the end, you'll understand real-time messaging patterns.
 
 ## Step 1: Create a basic WebSocket server
+
 Let's start with a minimal server...
 [code with expected output after each step]
 
 ## Step 2: Connect a browser client
+
 Now let's build a page that sends and receives messages...
 [guided steps with visible results]
-````
+```
 
 **How-to guide** (task-oriented):
 

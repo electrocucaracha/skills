@@ -54,7 +54,6 @@ define your source, configure transforms, and start the pipeline.
 pipeline = dataflow.Pipeline.create( source="postgresql://prod-db/analytics", destination="bigquery://my-project.dataset", )
 # Pipeline is ready to configure transforms
 ```
-````
 
 ## 2. Define transforms
 
@@ -63,12 +62,10 @@ pipeline = dataflow.Pipeline.create( source="postgresql://prod-db/analytics", de
 ## 3. Start the sync
 
 ...
-
-```
+````
 
 The developer sees their goal ("move data to warehouse") and follows a path to achieve it.
 
 ## Principle
 
 Name documents after what the developer achieves, not what the API provides. "Move data to your warehouse" not "Pipeline API." "Send email notifications" not "Notifications endpoint." Reference docs can be feature-centric (they describe machinery). How-to guides and tutorials must be outcome-centric.
-```

@@ -60,7 +60,6 @@ and in some cases, executable directly from the documentation.
 ```python
 payment = stripe.PaymentIntent.create(amount=2000, currency="usd")
 ```
-````
 
 # Stripe style — tabbed, copyable, with response preview
 
@@ -84,7 +83,6 @@ intent = stripe.PaymentIntent.create(
   "status": "requires_payment_method"
 }
 ```
-
 ````
 
 ### Documentation as Product Culture
@@ -93,6 +91,7 @@ intent = stripe.PaymentIntent.create(
 **Stripe override:** Documentation is a product with its own engineering investment.
 
 Key cultural practices:
+
 - **Career ladders include documentation** at every engineering level
 - **Performance reviews** assess documentation contributions
 - **A feature isn't done** until docs are written, reviewed, and published
@@ -103,6 +102,7 @@ Key cultural practices:
 ### Personalization
 
 Stripe docs adapt to the reader:
+
 - Detect the developer's likely language and show relevant examples first
 - Dashboard context carries into documentation (test vs. live mode indicators)
 - Code examples use the developer's actual test API keys when logged in
@@ -110,6 +110,7 @@ Stripe docs adapt to the reader:
 ### Error Documentation
 
 Every error includes:
+
 1. The exact error code
 2. Why it happens (one sentence)
 3. How to fix it (specific steps)
@@ -124,7 +125,7 @@ The most common causes are insufficient funds or a card that doesn't support the
 **Fix**:
 Ask the customer to use a different card,
 or retry with [3D Secure authentication](/guides/3d-secure).
-````
+```
 
 ## When to Choose Stripe Style
 

@@ -48,7 +48,6 @@ Create a service account and generate credentials...
 ```bash
 pip install sendwave
 ```
-````
 
 ## Send your first message
 
@@ -76,12 +75,10 @@ You've sent your first SMS.
 
 - [Tutorial: Build a notification service](/tutorials/notifications)
 - [API reference](/reference)
-
-```
+````
 
 Three steps. Under 5 minutes. Working result.
 
 ## Principle
 
 Strip the quickstart to the absolute minimum: install, configure one credential, make one meaningful call, see one meaningful result. Everything else (architecture, advanced config, edge cases) lives in other documents.
-```

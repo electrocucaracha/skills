@@ -45,7 +45,6 @@ What happens on timeout?
 ```bash
 curl -X POST https://api.example.com/v1/telemetry/subscribe \ -d callback_url="https://partner.com/telemetry" \ -d device_types[]="sensor.temperature"
 ```
-````
 
 ## 2. Receive telemetry (our system → your endpoint)
 
@@ -72,12 +71,10 @@ If your endpoint returns non-200 or times out:
 - We retry 3 times with exponential backoff (1s, 10s, 100s)
 - After 3 failures, the subscription is paused
 - You receive an email notification
-
-```
+````
 
 Both sides documented. The partner can build a complete integration from one document.
 
 ## Principle
 
 For every request you document, document the expected response. For every callback you send, document what the partner's system should do with it. Include architecture diagrams showing the full interaction flow.
-```

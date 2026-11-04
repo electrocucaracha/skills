@@ -14,7 +14,7 @@ If developers can't get started, writing more reference docs won't help.
 
 ## The Funnel
 
-```
+```text
 Stage       Question                    Content Types Needed
 ──────────  ────────────────────────    ──────────────────────
 Discover    "What is this?"             README, Explanation

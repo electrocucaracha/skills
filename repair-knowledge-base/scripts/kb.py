@@ -44,8 +44,7 @@ LABELS = {
 }
 LABEL_ADVICE = {
     "partial": "widen key_actions scope in the planning node",
-    "wrong-location": "fix applicable_when and add a pitfall to the "
-    "localization node",
+    "wrong-location": "fix applicable_when and add a pitfall to the localization node",
     "over-modification": "add a minimality constraint to the planning node",
     "refuted": "narrow applicable_when or portability",
 }
@@ -177,9 +176,7 @@ def check_portability(data: dict, errors: list[str]) -> None:
     level = data.get("level")
     expected = TRANSFER_BY_LEVEL.get(level)
     if expected and portability.get("transfer") != expected:
-        errors.append(
-            f"portability.transfer: must be '{expected}' for level {level}"
-        )
+        errors.append(f"portability.transfer: must be '{expected}' for level {level}")
     if level == "L3":
         for key in ("languages", "ecosystems", "tools"):
             if portability.get(key) != ["*"]:

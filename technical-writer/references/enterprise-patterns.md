@@ -42,7 +42,7 @@ If you need deeper structure, consider splitting into separate documentation set
 
 ### Recommended Top-Level Structure
 
-```
+```text
 docs/
 ├── getting-started/          # Quickstart + first tutorial
 ├── tutorials/                # Learning-oriented guides
@@ -108,7 +108,7 @@ This is the operational standard for developer documentation at scale.
 
 ### Core Workflow
 
-```
+```text
 Write (Markdown) → Review (PR) → Build (CI) → Deploy (CD) → Measure
 ```
 
@@ -159,7 +159,7 @@ Reviewers should check:
 - **Content type purity**: Is this one type of doc, not a mix?
 - **Style**: Does it follow the style guide?
 
-  ***
+---
 
 ## Versioning Strategy
 
@@ -190,7 +190,7 @@ For v2, see [here]."
 
 ### Lifecycle Management
 
-```
+```text
 Preview → Current → Supported → Deprecated → Archived
 ```
 
@@ -202,7 +202,7 @@ Preview → Current → Supported → Deprecated → Archived
 
   **Always link deprecated docs to migration guides.** A page that says "this is deprecated" without telling the reader what to do instead is useless.
 
-  ***
+---
 
 ## Multi-Audience Architecture
 
@@ -266,7 +266,7 @@ and constraints.
 
 ### Partner Documentation Structure
 
-```
+```text
 partner-docs/
 ├── getting-started/           # Partner onboarding
 │   ├── become-a-partner/      # Partnership tiers and application

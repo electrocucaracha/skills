@@ -18,7 +18,7 @@ or any product where developer time is the constraint and "good enough docs now"
 **Minimal override:** Start with 3 documents.
 Add more only when support burden justifies it.
 
-```
+```text
 Priority 1 (ship with these):
   README.md         → What it is + quickstart (combined)
   API reference     → Generated from code/OpenAPI spec
@@ -51,7 +51,6 @@ One sentence: what it does and who it's for.
 ```bash
 npm install myproduct
 ```
-````
 
 ## Quick Example
 
@@ -69,7 +68,6 @@ See [docs/api.md](docs/api.md)
 ## License
 
 MIT
-
 ````
 
 ### Auto-Generate What You Can
@@ -87,30 +85,34 @@ MIT
 **Diataxis default:** Full sentences, proper grammar, conversational tone.
 **Minimal override:** Bullet points, sentence fragments, and code blocks are fine. Correctness over polish.
 
-```markdown
+````markdown
 # Diataxis default
+
 To configure the database connection, set the `DATABASE_URL` environment variable to a valid PostgreSQL connection string.
 The format should follow the standard URI syntax.
 
 # Minimal override
+
 Set `DATABASE_URL`:
+
 ```bash
 DATABASE_URL=postgres://user:pass@host:5432/dbname
-````
-
 ```
+````
 
 ### Ship Without Perfection
 
 Principles:
+
 - Working code example > polished prose
 - Incomplete but accurate > comprehensive but stale
-- In the README > in a separate docs site nobody visits
+- In the readme > in a separate docs site nobody visits
 - Answering the top 3 questions > covering every edge case
 
 ### When to Graduate
 
 Move to a fuller style when:
+
 - Support tickets repeatedly ask the same questions → write how-to guides
 - New developers take more than 30 minutes to onboard → write a tutorial
 - Partners need to integrate → write integration guides
@@ -124,4 +126,3 @@ Move to a fuller style when:
 - Developer tools where the code is the documentation
 - Open-source libraries with a single maintainer
 - Any situation where "no docs" is the realistic alternative
-```

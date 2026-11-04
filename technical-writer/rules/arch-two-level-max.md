@@ -13,7 +13,7 @@ Research on information architecture consistently shows that broad, shallow stru
 
 ## Incorrect
 
-```
+```text
 docs/
 └── guides/
     └── messaging/
@@ -27,7 +27,7 @@ Users clicking through 5 levels of folders will abandon the search.
 
 ## Correct
 
-```
+```text
 docs/
 ├── guides/
 │   ├── send-sms.md

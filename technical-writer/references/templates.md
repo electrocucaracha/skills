@@ -43,11 +43,10 @@ and Google documentation.
 ```[language]
 [code for this step]
 ```
-````
 
 You should see:
 
-```
+```text
 [exact expected output]
 ```
 
@@ -78,14 +77,13 @@ Along the way, you learned how to:
 - [Link to next tutorial or how-to guide]
 - [Link to relevant explanation doc for deeper understanding]
 - [Link to API reference for the resources used]
-
 ````
 
 ---
 
 ## Quickstart Template
 
-```markdown
+````markdown
 # Quickstart
 
 <!-- Quickstarts are for experienced developers who want the fastest path to "hello world." -->
@@ -100,7 +98,7 @@ Along the way, you learned how to:
 
 ```[shell]
 [installation command]
-````
+```
 
 ## Configure
 
@@ -127,14 +125,13 @@ Response:
 - [Tutorial for deeper learning]
 - [How-to guide for common tasks]
 - [API reference for all endpoints]
-
 ````
 
 ---
 
 ## How-to Guide Template
 
-```markdown
+````markdown
 # How to [accomplish specific goal]
 
 <!-- How-to guides are task-oriented. The reader has a specific goal and wants to achieve it. -->
@@ -155,7 +152,7 @@ what this guide helps you do and when you'd need it]
 
 ```[language]
 [code]
-````
+```
 
 ### 2. [Action step]
 
@@ -175,14 +172,13 @@ what this guide helps you do and when you'd need it]
 
 - [Link to related how-to guide]
 - [Link to troubleshooting if something goes wrong]
-
 ````
 
 ---
 
 ## Integration Guide Template
 
-```markdown
+````markdown
 # Integrate [product] with [partner system / use case]
 
 ## Overview
@@ -192,8 +188,7 @@ what this integration enables and the high-level architecture]
 
 <!-- Include a simple architecture diagram showing the interaction between systems -->
 
-````
-
+```text
 [Your System] ---> [Product API] ---> [Partner System]
 
 ```
@@ -224,8 +219,8 @@ what this integration enables and the high-level architecture]
 
 <!-- Cover errors the partner will actually encounter -->
 
-| Error | Cause | Resolution |
-|-------|-------|------------|
+| Error                | Cause            | Resolution   |
+| -------------------- | ---------------- | ------------ |
 | [Error code/message] | [Why it happens] | [How to fix] |
 
 ## Testing
@@ -251,7 +246,7 @@ what this integration enables and the high-level architecture]
 
 [How to get help:
 support channels, SLAs, escalation paths]
-```
+````
 
 ---
 
@@ -290,7 +285,6 @@ support channels, SLAs, escalation paths]
 ```shell
 [codemod or migration script command]
 ```
-````
 
 This handles: [what the automated tool migrates]
 
@@ -352,14 +346,13 @@ If something goes wrong:
 ## Getting help
 
 [Support channels for migration issues]
-
 ````
 
 ---
 
 ## API Reference Template (per endpoint)
 
-```markdown
+````markdown
 ## [Method] [Path]
 
 <!-- e.g., POST /v1/payments -->
@@ -374,27 +367,27 @@ If something goes wrong:
 
 #### Path parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `[name]` | [type] | [description] |
+| Parameter | Type   | Description   |
+| --------- | ------ | ------------- |
+| `[name]`  | [type] | [description] |
 
 #### Query parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `[name]` | [type] | [yes/no] | [default] | [description] |
+| Parameter | Type   | Required | Default   | Description   |
+| --------- | ------ | -------- | --------- | ------------- |
+| `[name]`  | [type] | [yes/no] | [default] | [description] |
 
 #### Request body
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| Field    | Type   | Required | Description   |
+| -------- | ------ | -------- | ------------- |
 | `[name]` | [type] | [yes/no] | [description] |
 
 ### Request example
 
 ```[shell/language]
 [complete request example with realistic values]
-````
+```
 
 ### Response
 
@@ -415,7 +408,6 @@ If something goes wrong:
 | 400    | `invalid_request` | [what's wrong and how to fix] |
 | 401    | `unauthorized`    | [what's wrong and how to fix] |
 | 404    | `not_found`       | [what's wrong and how to fix] |
-
 ````
 
 ---
@@ -430,23 +422,29 @@ If something goes wrong:
 <!-- One sentence summary of the most significant change -->
 
 ### Added
+
 - [New feature with link to documentation]
 
 ### Changed
+
 - [Changed behavior with migration note if needed]
 
 ### Deprecated
+
 - [Deprecated feature with link to replacement]
 
 ### Removed
+
 - [Removed feature with link to migration guide]
 
 ### Fixed
+
 - [Bug fix with specific description]
 
 ### Security
+
 - [Security fix with severity note]
-````
+```
 
 ---
 
@@ -512,7 +510,6 @@ If something goes wrong:
 ```[shell]
 [diagnostic command if applicable]
 ```
-````
 
 **Solution**:
 
@@ -528,7 +525,6 @@ If something goes wrong:
 
 [Same pattern:
 symptom → diagnosis → solution → explanation]
-
 ````
 
 ---
@@ -547,16 +543,16 @@ symptom → diagnosis → solution → explanation]
 
 ## Access
 
-| System | How to Access |
-|--------|--------------|
+| System      | How to Access               |
+| ----------- | --------------------------- |
 | [Dashboard] | [URL + access instructions] |
-| [Logs] | [URL + query pattern] |
-| [Metrics] | [URL + key dashboards] |
+| [Logs]      | [URL + query pattern]       |
+| [Metrics]   | [URL + key dashboards]      |
 
 ## Monitoring
 
-| Alert | Severity | Meaning |
-|-------|----------|---------|
+| Alert        | Severity   | Meaning         |
+| ------------ | ---------- | --------------- |
 | [Alert name] | [P1/P2/P3] | [What it means] |
 
 ## Scenarios
@@ -586,7 +582,7 @@ If unresolved after [time], escalate to [team/person].
 - [ ] Update this runbook with any new learnings
 - [ ] File post-incident review
 - [ ] Update monitoring if gaps were identified
-````
+```
 
 ---
 

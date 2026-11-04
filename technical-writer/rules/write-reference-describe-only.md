@@ -31,34 +31,32 @@ Here's how:
 ```python
 user = admin.User.create(email="ada@example.com", role="viewer")
 ```
-````
 
 The role field uses RBAC because it provides fine-grained access control.
-
 ````
 
 This mixes instruction ("first, make sure"), opinion ("we recommend"), how-to ("here's how"), and explanation ("because it provides").
 
 ## Correct
 
-```markdown
+````markdown
 # POST /v1/users
 
 Creates a new user in the specified organization.
 
 ## Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `email` | string | yes | Valid email address. Must be unique within the organization. |
-| `role` | string | yes | One of `owner`, `admin`, `editor`, `viewer`. |
-| `org_id` | string | yes | Organization identifier. |
+| Parameter | Type   | Required | Description                                                  |
+| --------- | ------ | -------- | ------------------------------------------------------------ |
+| `email`   | string | yes      | Valid email address. Must be unique within the organization. |
+| `role`    | string | yes      | One of `owner`, `admin`, `editor`, `viewer`.                 |
+| `org_id`  | string | yes      | Organization identifier.                                     |
 
 ## Example request
 
 ```python
 admin.User.create(email="ada@example.com", role="editor", org_id="org_42")
-````
+```
 
 ## Example response
 
@@ -77,10 +75,8 @@ admin.User.create(email="ada@example.com", role="editor", org_id="org_42")
 | -------------- | ---------------------------------------------------------- |
 | `email_taken`  | A user with this email already exists in the organization. |
 | `invalid_role` | Role must be one of: owner, admin, editor, viewer.         |
-
-```
+````
 
 ## Principle
 
 Reference docs use **neutral description**. State what the machinery does. Don't instruct, explain, or opine. Link to how-to guides and explanation docs for those purposes.
-```

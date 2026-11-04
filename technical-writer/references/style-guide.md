@@ -143,7 +143,7 @@ Don't use tables for narrative content.
 
 ### Links
 
-- Use descriptive link text: "See the [authentication guide](/docs/auth)" not "Click [here](/docs/auth)"
+- Use descriptive link text: "See the [authentication guide](/docs/auth)" not `Click [here](/docs/auth)`
 - Link to specific sections when possible, not just pages
 - Verify links work (broken links destroy trust)
 - Prefer relative links within your documentation
@@ -224,7 +224,7 @@ When supporting multiple languages, follow these patterns:
 
 Always specify the language for syntax highlighting:
 
-````
+````markdown
 ```python
 import stripe
 

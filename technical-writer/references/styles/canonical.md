@@ -91,15 +91,13 @@ First, let's bootstrap a controller:
 ```bash
 juju bootstrap localhost my-controller
 ```
-````
 
 You should see output like:
 
-```
+```text
 Creating Juju controller "my-controller" on localhost/localhost
 ```
-
-```
+````
 
 ### Open-Source Documentation Community
 
@@ -118,4 +116,3 @@ Canonical actively hires technical authors and embeds them in engineering teams.
 - Teams with dedicated technical authors
 - Large documentation sets across multiple products needing consistency
 - When documentation quality is a strategic differentiator
-```

@@ -33,7 +33,9 @@ const result = await db.users.insert({
 ```python
 from myapp.db import DatabaseClient
 
-db = DatabaseClient(url="postgresql://localhost/mydb")  # TODO: Replace with your connection string
+db = DatabaseClient(
+    url="postgresql://localhost/mydb"
+)  # TODO: Replace with your connection string
 
 user = db.users.create(
     name="Ada Lovelace",
