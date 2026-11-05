@@ -86,19 +86,17 @@ python3 scripts/audit.py \
 
 The script writes a single JSON file with all findings.
 
-| JSON key         | Contents                                                                          |
-| ---------------- | --------------------------------------------------------------------------------- |
-| `en_total`       | total English Markdown files in scope                                             |
-| `es_total`       | total Spanish Markdown files in scope                                             |
-| `paired`         | count of files that exist in both languages                                       |
-| `missing_in_es`  | sorted list of English-only paths                                                 |
-| `orphan_in_es`   | sorted list of Spanish-only paths                                                 |
-| `drifted`        | list of `[path, evidence_list, evidence_count]` for structurally diverged pairs   |
-| `aligned_count`  | count of structurally equivalent pairs                                            |
-| `style_findings` | list of cross-file style inconsistency objects (STYLE-001 … STYLE-003)            |
-| `scores`         | dict of `path → {weight, tier, cross_lang, lines, score}` for every analysed file |
-| `errors`         | list of `[path, error_message]` for files that could not be parsed                |
-| `other_langs`    | list of other language directory names found under `content/`                     |
+- `en_total`: total English Markdown files in scope.
+- `es_total`: total Spanish Markdown files in scope.
+- `paired`: count of files that exist in both languages.
+- `missing_in_es`: sorted list of English-only paths.
+- `orphan_in_es`: sorted list of Spanish-only paths.
+- `drifted`: list of `[path, evidence_list, evidence_count]` for structurally diverged pairs.
+- `aligned_count`: count of structurally equivalent pairs.
+- `style_findings`: cross-file style inconsistency objects (STYLE-001 … STYLE-003).
+- `scores`: dict of `path → {weight, tier, cross_lang, lines, score}` for every analysed file.
+- `errors`: list of `[path, error_message]` for files that could not be parsed.
+- `other_langs`: other language directory names found under `content/`.
 
 **What the script checks:**
 

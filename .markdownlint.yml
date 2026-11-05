@@ -2,5 +2,5 @@
 # second H1 in the body so authors can write self-contained documents.
 MD025: false
 MD024: { siblings_only: true }
-# Docs use semantic line breaks (one clause per line) instead of hard wrapping.
-MD013: false
+# Preserve semantic line breaks while catching runaway generated prose.
+MD013: { line_length: 400, code_blocks: false, tables: false }

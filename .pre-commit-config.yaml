@@ -33,6 +33,7 @@ repos:
     rev: v0.50.0
     hooks:
       - id: markdownlint
+        language_version: "22.14.0"
         files: \.(md|mdown|markdown)$
   - repo: https://github.com/electrocucaracha/ai-prepare-commit-msg
     rev: v20.11.0

@@ -1,0 +1,7 @@
+[TYPECHECK]
+# Click supplies callback arguments when invoking decorated CLI commands.
+signature-mutators=click.command,click.group,click.decorators.command,click.decorators.group
+
+[FORMAT]
+# Match the Flake8 source-line limit; Black still wraps expressions at 88.
+max-line-length=120

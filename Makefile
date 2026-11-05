@@ -24,5 +24,5 @@ fmt:
 	yamlfmt -dstar -gitignore_excludes '**/*.{yaml,yml}'
 	command -v prettier > /dev/null || npm install prettier
 	npx --yes prettier . --write --ignore-path .gitignore --use-tabs false --prose-wrap preserve
-	uvx ruff check --select I --fix .
-	uvx ruff format .
+	uvx ruff check --fix .
+	uvx black .

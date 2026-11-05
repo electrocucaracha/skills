@@ -36,9 +36,9 @@ delegated authorization without sharing credentials... (explanation)
 
 ### POST /auth/token
 
-| Parameter | Type | Required |
+| Parameter  | Type   | Required |
 | ---------- | ------ | -------- | ----------- |
-| grant_type | string | yes | (reference) |
+| grant_type | string | yes      | (reference) |
 
 ## Why OAuth 2.0?
 

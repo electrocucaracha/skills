@@ -1,0 +1,5 @@
+target-version = "py312"
+line-length = 88
+
+[lint]
+extend-select = ["BLE", "DTZ", "EXE", "I", "S112", "SIM117", "TRY004"]

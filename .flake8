@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 120
+# Black follows PEP 8 spacing for complex slices, which E203 misclassifies.
+extend-ignore = E203

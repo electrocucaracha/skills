@@ -187,7 +187,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- BREAKING: Enabled consistent, high-signal reviews for Spanish localization PRs by introducing a new review workflow that clones the repository, fetches the PR, and runs four deterministic checks, and generates a Markdown report with actionable comments in Spanish, with a follow-up mode verifying whether previous review suggestions were addressed, and requiring reviewers to use this tool for all future Spanish localization PRs. [a7e83f4b](https://github.com/electrocucaracha/skills/commit/a7e83f4b8c13ef51f78f64c3090e1cea9695d1a6)
+- BREAKING: Enabled consistent, high-signal reviews for Spanish localization PRs
+  by introducing a new review workflow that clones the repository,
+  fetches the PR, and runs four deterministic checks,
+  and generates a Markdown report with actionable comments in Spanish,
+  with a follow-up mode verifying whether previous review suggestions were addressed,
+  and requiring reviewers to use this tool for all future Spanish localization PRs.
+  [a7e83f4b](https://github.com/electrocucaracha/skills/commit/a7e83f4b8c13ef51f78f64c3090e1cea9695d1a6)
 
 ## [2.1.0] - 2026-07-29
 

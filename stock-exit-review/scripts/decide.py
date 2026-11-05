@@ -92,6 +92,7 @@ QUESTIONS = {
 
 
 def analysis_hash(analysis: dict) -> str:
+    """Hash stable market inputs independently of capture-time metadata."""
     payload = {
         key: value
         for key, value in analysis.items()
@@ -103,6 +104,7 @@ def analysis_hash(analysis: dict) -> str:
 
 
 def market_features(features: dict) -> dict:
+    """Select approved market fields and reject invalid numeric values."""
     selected = {key: features[key] for key in FEATURE_KEYS}
     if not all(
         value is None
@@ -121,6 +123,8 @@ Probability = Annotated[float, Field(ge=0, le=1)]
 
 
 class ChoiceAnswer(BaseModel):
+    """Validate a categorical answer and its normalized probability distribution."""
+
     model_config = ConfigDict(strict=True, allow_inf_nan=False)
 
     type: Literal["choice"]
@@ -130,6 +134,7 @@ class ChoiceAnswer(BaseModel):
 
     @model_validator(mode="after")
     def check_distribution(self) -> Self:
+        """Require a normalized distribution whose selected choice is maximal."""
         if not math.isclose(sum(self.probabilities.values()), 1, abs_tol=0.001):
             raise ValueError("Jev probabilities do not sum to one")
         if self.choice not in self.probabilities or (
@@ -140,6 +145,8 @@ class ChoiceAnswer(BaseModel):
 
 
 class JevResponse(BaseModel):
+    """Validate the complete set of required market answers."""
+
     model_config = ConfigDict(strict=True)
 
     model: Annotated[str, Field(min_length=1, max_length=128)]
@@ -147,6 +154,7 @@ class JevResponse(BaseModel):
 
     @model_validator(mode="after")
     def check_questions(self) -> Self:
+        """Require exactly the configured questions and answer options."""
         if set(self.answers) != set(QUESTIONS):
             raise ValueError("invalid Jev answer schema")
         for name, answer in self.answers.items():
@@ -156,13 +164,15 @@ class JevResponse(BaseModel):
 
 
 def query_jev(state: dict, model: str, token: str) -> dict:
+    """Request and validate bounded Jev answers over authenticated TLS."""
     body = json.dumps(
         {"state": state, "model": model, "questions": QUESTIONS}, allow_nan=False
     ).encode()
     tls = ssl.create_default_context()
     tls.minimum_version = ssl.TLSVersion.TLSv1_3
-    with httpx.Client(timeout=30, follow_redirects=False, verify=tls) as client:
-        with client.stream(
+    with (
+        httpx.Client(timeout=30, follow_redirects=False, verify=tls) as client,
+        client.stream(
             "POST",
             "https://api.typesafe.ai/v1/systemone",
             content=body,
@@ -171,17 +181,19 @@ def query_jev(state: dict, model: str, token: str) -> dict:
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-        ) as response:
-            response.raise_for_status()
-            payload = bytearray()
-            for chunk in response.iter_bytes(chunk_size=65_536):
-                payload.extend(chunk)
-                if len(payload) > 2_000_000:
-                    raise ValueError("Jev response exceeds size limit")
+        ) as response,
+    ):
+        response.raise_for_status()
+        payload = bytearray()
+        for chunk in response.iter_bytes(chunk_size=65_536):
+            payload.extend(chunk)
+            if len(payload) > 2_000_000:
+                raise ValueError("Jev response exceeds size limit")
     return JevResponse.model_validate_json(payload).model_dump()
 
 
 def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
+    """Apply the conservative policy to validated market classifications."""
     if any(answer["confidence"] < minimum for answer in answers.values()):
         return "insufficient_evidence", ["low Jev classification confidence"]
     trend, risk = answers["trend"]["choice"], answers["risk"]["choice"]
@@ -215,6 +227,8 @@ def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
 )
 @click.option("--model", envvar="JEV_MODEL", default="jev-latest", show_default=True)
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
+# The callback mirrors CLI options; state, policy, and result share one audit boundary.
+# pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
 def main(
     analysis_path,
     context_path,
@@ -224,6 +238,7 @@ def main(
     model,
     output,
 ) -> None:
+    """Request market classifications and persist a conservative assessment."""
     analysis = read_json(analysis_path)
     ticker_value(analysis["ticker"])
     as_of = dt.date.fromisoformat(analysis["as_of"])
@@ -259,7 +274,7 @@ def main(
         "ticker": analysis["ticker"],
         "as_of": analysis["as_of"],
         "analysis_hash": analysis_hash(analysis),
-        "issued_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "issued_at": dt.datetime.now(dt.UTC).isoformat(),
         "policy": policy,
         "requested_model": model,
         "model": None,
@@ -268,7 +283,7 @@ def main(
         "forecast": None,
         "reasons": [],
     }
-    today = dt.datetime.now(dt.timezone.utc).date()
+    today = dt.datetime.now(dt.UTC).date()
     token = os.getenv("TYPESAFE_API_KEY")
     if (
         analysis["data_quality"]["usable"] is not True

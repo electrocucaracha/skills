@@ -82,10 +82,16 @@ STALE_DAYS = 180
 DEFAULT_BUDGET = {"L1": 2, "L2": 2, "L3": 1}
 
 
+def utc_today() -> datetime.date:
+    """Return the current UTC date for provenance and staleness checks."""
+    return datetime.datetime.now(datetime.UTC).date()
+
+
 # --- frontmatter -----------------------------------------------------------
 
 
 def parse_scalar(raw: str) -> object:
+    """Decode a scalar or inline list from the supported YAML subset."""
     value = raw.strip()
     if value.startswith("[") and value.endswith("]"):
         inner = value[1:-1].strip()
@@ -139,6 +145,7 @@ def parse_frontmatter(block: str) -> dict:
 
 
 def load_frontmatter(path: pathlib.Path) -> dict:
+    """Load and parse a node's delimited YAML metadata."""
     match = FRONTMATTER_RE.match(path.read_text(encoding="utf-8"))
     if not match:
         raise ValueError("missing YAML frontmatter delimited by ---")
@@ -149,11 +156,13 @@ def load_frontmatter(path: pathlib.Path) -> dict:
 
 
 def check_nonempty_list(data: dict, key: str, errors: list[str]) -> None:
+    """Record an error if a required list is absent or empty."""
     if not isinstance(data.get(key), list) or not data[key]:
         errors.append(f"{key}: must be a non-empty list")
 
 
 def check_id(data: dict, errors: list[str]) -> None:
+    """Validate identifier spelling and its level/stage prefix."""
     node_id = data.get("id", "")
     if not isinstance(node_id, str) or not ID_RE.match(node_id):
         errors.append("id: must be lowercase, hyphen-separated")
@@ -166,6 +175,7 @@ def check_id(data: dict, errors: list[str]) -> None:
 
 
 def check_portability(data: dict, errors: list[str]) -> None:
+    """Validate transfer scope and universal-node portability markers."""
     portability = data.get("portability")
     if not isinstance(portability, dict):
         errors.append("portability: must be a mapping")
@@ -174,7 +184,7 @@ def check_portability(data: dict, errors: list[str]) -> None:
         if key not in portability:
             errors.append(f"portability.{key}: missing")
     level = data.get("level")
-    expected = TRANSFER_BY_LEVEL.get(level)
+    expected = TRANSFER_BY_LEVEL.get(level) if isinstance(level, str) else None
     if expected and portability.get("transfer") != expected:
         errors.append(f"portability.transfer: must be '{expected}' for level {level}")
     if level == "L3":
@@ -187,6 +197,7 @@ def check_portability(data: dict, errors: list[str]) -> None:
 
 
 def parse_date(value: object) -> datetime.date | None:
+    """Parse a verification date or return None for invalid input."""
     if isinstance(value, datetime.date):
         return value
     try:
@@ -196,6 +207,7 @@ def parse_date(value: object) -> datetime.date | None:
 
 
 def check_evidence(data: dict, errors: list[str], warnings: list[str]) -> None:
+    """Validate provenance and flag stale verification evidence."""
     evidence = data.get("evidence")
     if not isinstance(evidence, dict):
         errors.append("evidence: must be a mapping")
@@ -217,7 +229,7 @@ def check_evidence(data: dict, errors: list[str], warnings: list[str]) -> None:
         if parsed is None:
             errors.append("evidence.last_verified: must be YYYY-MM-DD")
         else:
-            age = (datetime.date.today() - parsed).days
+            age = (utc_today() - parsed).days
             if age > STALE_DAYS:
                 warnings.append(
                     f"evidence.last_verified: stale by {age - STALE_DAYS} "
@@ -226,6 +238,7 @@ def check_evidence(data: dict, errors: list[str], warnings: list[str]) -> None:
 
 
 def check_retrieval_keys(data: dict, errors: list[str]) -> None:
+    """Validate the search-key mapping and require at least one key."""
     keys = data.get("retrieval_keys")
     if not isinstance(keys, dict):
         errors.append("retrieval_keys: must be a mapping")
@@ -238,6 +251,7 @@ def check_retrieval_keys(data: dict, errors: list[str]) -> None:
 
 
 def validate(path: pathlib.Path) -> tuple[list[str], list[str]]:
+    """Return schema errors and freshness warnings for a repair node."""
     errors: list[str] = []
     warnings: list[str] = []
     try:
@@ -265,10 +279,12 @@ def validate(path: pathlib.Path) -> tuple[list[str], list[str]]:
 
 
 def node_paths(root: pathlib.Path) -> list[pathlib.Path]:
+    """List repair-node Markdown paths in deterministic order."""
     return sorted((root / "nodes").glob("L[123]/*.md"))
 
 
 def load_nodes(root: pathlib.Path) -> list[tuple[pathlib.Path, dict]]:
+    """Load valid node metadata and report files that cannot be parsed."""
     nodes = []
     for path in node_paths(root):
         try:
@@ -279,6 +295,7 @@ def load_nodes(root: pathlib.Path) -> list[tuple[pathlib.Path, dict]]:
 
 
 def as_list(value: object) -> list[str]:
+    """Normalize a scalar or list into a list of strings."""
     if isinstance(value, list):
         return [str(item) for item in value]
     return [str(value)] if value else []
@@ -288,6 +305,7 @@ def as_list(value: object) -> list[str]:
 
 
 def cmd_template(args: argparse.Namespace) -> int:
+    """Print a node skeleton for the requested abstraction and stage."""
     level, stage = args.level, args.stage
     abbr = STAGE_ABBR[stage]
     star = '["*"]'
@@ -297,8 +315,7 @@ def cmd_template(args: argparse.Namespace) -> int:
         else '  languages: ["<lang>"]\n  ecosystems: ["<ecosystem>"]\n'
         '  tools: ["<tool>"]'
     )
-    print(
-        f"""---
+    print(f"""---
 id: {level.lower()}-{abbr}-<failure-class>-<slug>
 level: {level}
 stage: {stage}
@@ -318,12 +335,12 @@ portability:
   repo_shape: ["service"]
   transfer: {TRANSFER_BY_LEVEL[level]}
 evidence:
-  source_trajectories: ["traj-{datetime.date.today()}-<context>"]
+    source_trajectories: ["traj-{utc_today()}-<context>"]
   repos: ["<owner>/<name>"]
   outcome: verified
   verified_count: 1
   refuted_count: 0
-  last_verified: "{datetime.date.today()}"
+    last_verified: "{utc_today()}"
 retrieval_keys:
   symptoms: ["<what a human observes>"]
   error_signatures: ["<literal log string>"]
@@ -339,12 +356,12 @@ retrieval_keys:
 ## Pitfalls
 
 ## Provenance
-"""
-    )
+""")
     return 0
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
+    """Validate the selected nodes and print their diagnostics."""
     paths = args.paths or node_paths(args.root)
     if not paths:
         print(f"no node files under {args.root}/nodes/")
@@ -368,6 +385,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_index(args: argparse.Namespace) -> int:
+    """Regenerate the failure-class index and stale-node summary."""
     nodes = load_nodes(args.root)
     if not nodes:
         print(f"no node files under {args.root}/nodes/")
@@ -377,22 +395,20 @@ def cmd_index(args: argparse.Namespace) -> int:
     classes: dict[str, dict] = {}
     repos: set[str] = set()
     stale: list[str] = []
-    today = datetime.date.today()
+    today = utc_today()
 
-    for path, data in nodes:
+    for _, data in nodes:
         level = str(data.get("level"))
         by_level[level] = by_level.get(level, 0) + 1
         entry = classes.setdefault(
             str(data.get("failure_class")),
             {"loc": 0, "plan": 0, "exec": 0, "repos": set(), "last": None},
         )
-        stage = str(data.get("stage"))
-        if stage in STAGE_ABBR:
-            entry[STAGE_ABBR[stage]] += 1
+        if data.get("stage") in STAGE_ABBR:
+            entry[STAGE_ABBR[data["stage"]]] += 1
         evidence = data.get("evidence") or {}
-        node_repos = as_list(evidence.get("repos"))
-        entry["repos"].update(node_repos)
-        repos.update(node_repos)
+        entry["repos"].update(as_list(evidence.get("repos")))
+        repos.update(entry["repos"])
         parsed = parse_date(evidence.get("last_verified"))
         if parsed:
             if entry["last"] is None or parsed > entry["last"]:
@@ -404,9 +420,9 @@ def cmd_index(args: argparse.Namespace) -> int:
         "# Repair Knowledge Base Index",
         "",
         f"Updated: {today}",
-        "Nodes: {} ({})".format(
-            len(nodes),
-            " / ".join(f"{lvl} {by_level.get(lvl, 0)}" for lvl in LEVELS),
+        (
+            f"Nodes: {len(nodes)} "
+            f"({' / '.join(f'{level} {by_level.get(level, 0)}' for level in LEVELS)})"
         ),
         f"Repos contributing: {len(repos)}",
         "",
@@ -418,14 +434,8 @@ def cmd_index(args: argparse.Namespace) -> int:
     for name in sorted(classes):
         entry = classes[name]
         lines.append(
-            "| {} | {} | {} | {} | {} | {} |".format(
-                name,
-                entry["loc"],
-                entry["plan"],
-                entry["exec"],
-                len(entry["repos"]),
-                entry["last"] or "-",
-            )
+            f"| {name} | {entry['loc']} | {entry['plan']} | {entry['exec']} | "
+            f"{len(entry['repos'])} | {entry['last'] or '-'} |"
         )
     lines += ["", f"## Stale (>{STALE_DAYS} days unverified)", ""]
     lines += [f"- {item}" for item in sorted(stale)] or ["- none"]
@@ -438,6 +448,7 @@ def cmd_index(args: argparse.Namespace) -> int:
 
 
 def portability_ok(data: dict, language: str | None, ecosystem: str | None):
+    """Check whether a node supports the requested language and ecosystem."""
     portability = data.get("portability") or {}
     for value, key in ((language, "languages"), (ecosystem, "ecosystems")):
         if not value:
@@ -449,6 +460,7 @@ def portability_ok(data: dict, language: str | None, ecosystem: str | None):
 
 
 def score_node(data: dict, text: str, failure_class: str | None) -> int:
+    """Rank a node using symptom matches and verification evidence."""
     tokens = set(TOKEN_RE.findall(text.lower()))
     keys = data.get("retrieval_keys") or {}
     score = 0
@@ -470,6 +482,7 @@ def score_node(data: dict, text: str, failure_class: str | None) -> int:
 
 
 def cmd_query(args: argparse.Namespace) -> int:
+    """Retrieve matching guidance within the per-level context budget."""
     text = (args.text or "").lower()
     selected: list[tuple[int, pathlib.Path, dict]] = []
     budget = dict(DEFAULT_BUDGET)
@@ -500,7 +513,7 @@ def cmd_query(args: argparse.Namespace) -> int:
         evidence = data.get("evidence") or {}
         stale = ""
         parsed = parse_date(evidence.get("last_verified"))
-        if parsed and (datetime.date.today() - parsed).days > STALE_DAYS:
+        if parsed and (utc_today() - parsed).days > STALE_DAYS:
             stale = "  [STALE]"
         print(
             f"{data.get('level')}  score={score}  {path}{stale}\n"
@@ -510,7 +523,8 @@ def cmd_query(args: argparse.Namespace) -> int:
 
 
 def cmd_outcome(args: argparse.Namespace) -> int:
-    today = datetime.date.today().isoformat()
+    """Update verification counters and dates for the selected repair nodes."""
+    today = utc_today().isoformat()
     counter = LABELS[args.label]
     failed = False
     for node_id in args.node_ids:
@@ -550,6 +564,7 @@ def cmd_outcome(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
+    """Parse repair-knowledge-base commands and dispatch the selected action."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--root",

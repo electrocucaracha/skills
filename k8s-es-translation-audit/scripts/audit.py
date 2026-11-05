@@ -11,7 +11,8 @@
 
 Usage::
 
-    python3 scripts/audit.py --repo <path-to-website-clone> [--scope <subpath>] [--out <results.json>]
+    python3 scripts/audit.py --repo <path-to-website-clone>
+        [--scope <subpath>] [--out <results.json>]
 
 Outputs a single JSON file consumed by report.py.
 """
@@ -56,6 +57,7 @@ _DEPLOYMENT_EN = re.compile(r"\bDeployment\b")
 
 
 def md_files(base: Path, scope: str | None) -> set[str]:
+    """Inventory Markdown files relative to the language root."""
     root = base / scope if scope else base
     if not root.exists():
         return set()
@@ -67,15 +69,17 @@ def md_files(base: Path, scope: str | None) -> set[str]:
 
 
 def get_frontmatter_weight(path: Path) -> int:
+    """Read the navigation weight, falling back for unavailable metadata."""
     try:
         text = path.read_text(errors="replace")
         m = re.search(r"^weight:\s*(\d+)", text, re.MULTILINE)
         return int(m.group(1)) if m else 999
-    except Exception:
+    except (OSError, ValueError):
         return 999
 
 
 def section_tier(rel: str) -> int:
+    """Map a content path to its estimated traffic tier."""
     return SECTION_TIER.get(rel.split("/")[0], 2)
 
 
@@ -85,9 +89,10 @@ def cross_lang_count(rel: str, other_lang_dirs: list[Path]) -> int:
 
 
 def file_lines(path: Path) -> int:
+    """Count source lines, falling back when a file cannot be read."""
     try:
         return len(path.read_text(errors="replace").splitlines())
-    except Exception:
+    except OSError:
         return 999
 
 
@@ -102,6 +107,20 @@ def composite_score(rel: str, weight: int, xlang: int, lines: int) -> int:
     xlang_bonus = min(xlang, 8) * 200
     qw_bonus = max(0, 500 - lines) if lines < 500 else 0
     return base - xlang_bonus - qw_bonus
+
+
+def score_file(en_path: Path, rel: str, other_lang_dirs: list[Path]) -> dict[str, int]:
+    """Calculate the priority signals for one English source file."""
+    weight = get_frontmatter_weight(en_path)
+    cross_lang = cross_lang_count(rel, other_lang_dirs)
+    lines = file_lines(en_path)
+    return {
+        "weight": weight,
+        "tier": section_tier(rel),
+        "cross_lang": cross_lang,
+        "lines": lines,
+        "score": composite_score(rel, weight, cross_lang, lines),
+    }
 
 
 def parse_structure(text: str) -> dict[str, dict]:
@@ -131,6 +150,7 @@ def parse_structure(text: str) -> dict[str, dict]:
 
 
 def compare_structures(en_struct: dict, es_struct: dict) -> tuple[str, list[str]]:
+    """Compare section counts and report evidence of structural drift."""
     evidence: list[str] = []
     es_headings = set(es_struct.keys())
     for h in en_struct:
@@ -157,11 +177,12 @@ def _discover_other_langs(repo: Path) -> list[Path]:
             for d in content_dir.iterdir()
             if d.is_dir() and d.name not in ("en", "es")
         ]
-    except Exception:
+    except OSError:
         return []
 
 
 def run_style_analysis(es_root: Path, paired: list[str]) -> list[dict]:
+    """Find inconsistent terminology and imperative register in paired pages."""
     sample = paired[:80]
     findings = []
 
@@ -175,7 +196,8 @@ def run_style_analysis(es_root: Path, paired: list[str]) -> list[dict]:
     for rel in sample:
         try:
             text = (es_root / rel).read_text(errors="replace")
-        except Exception:
+        except OSError as exc:
+            click.echo(f"Skipping style analysis for {rel}: {exc}", err=True)
             continue
         if _CLUSTER_ACCENTED.search(text):
             accent_files.append(rel)
@@ -196,7 +218,10 @@ def run_style_analysis(es_root: Path, paired: list[str]) -> list[dict]:
                 "id": "STYLE-001",
                 "impact": "minor",
                 "evidence": (accent_files[:2] + plain_files[:2]),
-                "observation": "Mixed usage of 'clúster' (accented) vs 'cluster' (unaccented) across content/es files.",
+                "observation": (
+                    "Mixed usage of 'clúster' (accented) vs 'cluster' (unaccented) "
+                    "across content/es files."
+                ),
                 "recommendation": (
                     "Standardize on 'clúster' per RAE guidelines or 'cluster' per Kubernetes "
                     "project convention. Document the chosen form in the localization style guide."
@@ -255,7 +280,10 @@ def run_style_analysis(es_root: Path, paired: list[str]) -> list[dict]:
     show_default=True,
     help="Output JSON path.",
 )
+# Keep language inventories and output fields together in the audit orchestration.
+# pylint: disable-next=too-many-locals
 def main(repo: str, scope: str | None, out: str) -> None:
+    """Audit language inventories, structural drift, and cross-file style."""
     repo_path = Path(repo)
     en_root = repo_path / "content/en"
     es_root = repo_path / "content/es"
@@ -286,17 +314,7 @@ def main(repo: str, scope: str | None, out: str) -> None:
 
     scores: dict[str, dict] = {}
     for rel in missing_in_es:
-        en_path = en_root / rel
-        w = get_frontmatter_weight(en_path)
-        xl = cross_lang_count(rel, other_lang_dirs)
-        ln = file_lines(en_path)
-        scores[rel] = {
-            "weight": w,
-            "tier": section_tier(rel),
-            "cross_lang": xl,
-            "lines": ln,
-            "score": composite_score(rel, w, xl, ln),
-        }
+        scores[rel] = score_file(en_root / rel, rel, other_lang_dirs)
 
     click.echo("Comparing paired file structures…", err=True)
     drifted: list[tuple[str, list[str], int]] = []
@@ -312,21 +330,12 @@ def main(repo: str, scope: str | None, out: str) -> None:
                 parse_structure(en_text),
                 parse_structure(es_text),
             )
-            w = get_frontmatter_weight(en_path)
-            xl = cross_lang_count(rel, other_lang_dirs)
-            ln = file_lines(en_path)
-            scores[rel] = {
-                "weight": w,
-                "tier": section_tier(rel),
-                "cross_lang": xl,
-                "lines": ln,
-                "score": composite_score(rel, w, xl, ln),
-            }
+            scores[rel] = score_file(en_path, rel, other_lang_dirs)
             if status == "drifted":
                 drifted.append((rel, evidence, len(evidence)))
             else:
                 aligned_count += 1
-        except Exception as exc:
+        except (OSError, ValueError, KeyError, TypeError) as exc:
             errors.append((rel, str(exc)))
 
     click.echo("Running Spanish style analysis…", err=True)
@@ -349,7 +358,7 @@ def main(repo: str, scope: str | None, out: str) -> None:
     }
 
     out_path = Path(out)
-    out_path.write_text(json.dumps(results, indent=2))
+    out_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
     click.echo(f"Results written to: {out_path}", err=True)
     click.echo(
         f"Summary: missing={len(missing_in_es)} orphan={len(orphan_in_es)}"
