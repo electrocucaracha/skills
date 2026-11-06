@@ -22,7 +22,11 @@ fmt:
 	git ls-files --cached --others --exclude-standard -z -- '*.sh' | xargs -0 shfmt -l -w -s -i 4
 	command -v yamlfmt > /dev/null || curl -s "https://i.jpillora.com/google/yamlfmt!!" | bash
 	yamlfmt -dstar -gitignore_excludes '**/*.{yaml,yml}'
-	command -v prettier > /dev/null || npm install prettier
-	npx --yes prettier . --write --ignore-path .gitignore --use-tabs false --prose-wrap preserve
+	# Keep this aligned with the Prettier version pinned by Super-Linter.
+	npx --yes prettier@3.9.8 . --write --ignore-path .gitignore --use-tabs false --prose-wrap preserve
 	uvx ruff check --fix .
 	uvx black .
+
+.PHONY: lint-python
+lint-python:
+	git ls-files --cached --others --exclude-standard -z -- '*.py' | xargs -0 uvx pylint --rcfile=.python-lint

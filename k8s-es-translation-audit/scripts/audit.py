@@ -369,4 +369,6 @@ def main(repo: str, scope: str | None, out: str) -> None:
 
 
 if __name__ == "__main__":
+    # Click supplies callback arguments; CI cannot infer its missing dependency.
+    # pylint: disable-next=no-value-for-parameter
     main()

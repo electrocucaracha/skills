@@ -122,6 +122,8 @@ def market_features(features: dict) -> dict:
 Probability = Annotated[float, Field(ge=0, le=1)]
 
 
+# Pydantic models expose data and validators, not a service-method interface.
+# pylint: disable-next=too-few-public-methods
 class ChoiceAnswer(BaseModel):
     """Validate a categorical answer and its normalized probability distribution."""
 
@@ -144,6 +146,8 @@ class ChoiceAnswer(BaseModel):
         return self
 
 
+# Pydantic models expose data and validators, not a service-method interface.
+# pylint: disable-next=too-few-public-methods
 class JevResponse(BaseModel):
     """Validate the complete set of required market answers."""
 
@@ -327,6 +331,8 @@ def main(
 
 if __name__ == "__main__":
     try:
+        # Click supplies callback arguments; CI cannot infer its missing dependency.
+        # pylint: disable-next=no-value-for-parameter
         main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit(

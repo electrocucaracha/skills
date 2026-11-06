@@ -286,6 +286,8 @@ def context_command(root, ticker, output) -> None:
 
 if __name__ == "__main__":
     try:
+        # Click supplies callback arguments; CI cannot infer its missing dependency.
+        # pylint: disable-next=no-value-for-parameter
         main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit("history failed: " + str(error)) from None

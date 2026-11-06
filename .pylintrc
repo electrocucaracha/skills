@@ -1,4 +1,7 @@
 [TYPECHECK]
+# Super-Linter does not install these scripts' PEP 723 dependencies.
+# Keep this allowlist limited to packages declared in script metadata.
+ignored-modules=atomicwrites,click,httpx,numpy,pandas,pydantic,semver,ta,yfinance
 # Click supplies callback arguments when invoking decorated CLI commands.
 signature-mutators=click.command,click.group,click.decorators.command,click.decorators.group
 

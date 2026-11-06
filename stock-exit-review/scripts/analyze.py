@@ -233,6 +233,8 @@ def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> 
 
 if __name__ == "__main__":
     try:
+        # Click supplies callback arguments; CI cannot infer its missing dependency.
+        # pylint: disable-next=no-value-for-parameter
         main()
     except (ValueError, KeyError, OSError, ImportError, TypeError) as error:
         raise SystemExit("analysis failed: " + str(error)) from None
