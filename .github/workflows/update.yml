@@ -7,14 +7,14 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 name: "Maintenance: Scheduled Dependency Version Updates"
-"on":
+# yamllint disable-line rule:truthy
+on:
   schedule:
     - cron: "0 0 * * 5"
   workflow_dispatch:
-permissions:
-  contents: read
+permissions: read-all
 concurrency:
-  group: scheduled-version-updates-${{ github.ref }}
+  group: scheduled-version-updates
   cancel-in-progress: true
 jobs:
   check-versions:
