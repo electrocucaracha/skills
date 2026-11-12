@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.10.2] - 2026-11-11
+
+### Changed
+
+- Updated plugin and workflow versions to ensure consistency with recent improvements and fixes from dependencies, bumping the technical-writer and fix-gh-lint-issue plugins to 5.10.1 and the pre-commit hook ai-prepare-commit-msg to v20.14.1, and updating workflow references in linter.yml and update.yml to use electrocucaracha/gh-workflows v13.3.1. [62b8911e](https://github.com/electrocucaracha/skills/commit/62b8911e2965350d745bcc3ca55ef5ec67524cdb)
+
+## [5.10.1] - 2026-11-11
+
+### Changed
+
+- Enabled automated assessment of skill correctness and adherence to process requirements through the introduction of evaluation specifications for fixing GitHub linting issues, repairing knowledge bases, stock exit reviews, and technical writing. [9c164541](https://github.com/electrocucaracha/skills/commit/9c1645412f16c74205abea6ef19db7995e63cbc1)
+
+## [5.10.0] - 2026-11-06
+
+### Added
+
+- Enabled automatic review requests for code changes by introducing a CODEOWNERS file that designates @electrocucaracha as the default code owner for all files in the repository. [79ba745d](https://github.com/electrocucaracha/skills/commit/79ba745d1094bb970fdbf520c7b382cc423def5f)
+
+## [5.9.3] - 2026-11-06
+
+### Changed
+
+- Simplified the GitHub Actions workflow to use correct YAML syntax and permissions, resolving issues with YAML linting and improving workflow maintainability. [df5e1f98](https://github.com/electrocucaracha/skills/commit/df5e1f98360167fde30386a08695d48a2a520d3c)
+
+## [5.9.2] - 2026-11-05
+
+### Changed
+
+- Normalized Pylint and script lint flow with Super-Linter config, enabling improved linting consistency across runtime and CI environments. [5c504d63](https://github.com/electrocucaracha/skills/commit/5c504d63ca1d4c0ba0c942d9df23e7f97b71afb9)
+
+## [5.9.1] - 2026-11-05
+
+### Changed
+
+- Enabled consistent formatting and static analysis across the codebase through the introduction of editor and linter configuration files, refined markdownlint settings, and updated Python script docstrings and documentation. [53094d5a](https://github.com/electrocucaracha/skills/commit/53094d5a88198ca3059d70f43a9fa82fd539f94c)
+
+## [5.9.0] - 2026-11-04
+
+### Added
+
+- Detailed entries were introduced for versions 5.4.0 through 5.8.1, documenting new features, plugin metadata improvements, automation enhancements, and notable bugfixes, providing clearer project history and ensuring transparency for recent changes. [6ff1b864](https://github.com/electrocucaracha/skills/commit/6ff1b8647f58434f55c3a6792e37a08a76ff6a3c)
+
 ## [5.8.1] - 2026-11-04
 
 ### Changed
