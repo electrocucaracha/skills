@@ -1,0 +1,105 @@
+{
+  "skill_name": "fix-gh-lint-issue",
+  "description": "Evaluates issue discovery, lint reproduction and repair, formatter stability, preventive actions, and safe issue handling.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Fix Super-Linter issue #42 in this checkout. The issue has several comments with newer failure logs.",
+      "expected_output": "The skill reads the issue body and all comments, prioritizes the newest failure log, groups findings by linter and file, and confirms the checkout is at or after the reported commit.",
+      "assertions": [
+        "Uses `gh issue view 42 --comments` to inspect the issue and comments",
+        "Uses the latest issue comment when it contains a newer failure log",
+        "Checks the reported commit SHA against the current checkout"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "There is a Super-Linter failure open for this repository, but I don't know the issue number. Can you find it?",
+      "expected_output": "The skill locates the open issue labeled `super-linter-issue`, then reads its details and comments before attempting a fix.",
+      "assertions": [
+        "Runs `gh issue list --state open --label super-linter-issue --json number,title,url`",
+        "Reads the selected issue with `gh issue view <number> --comments`",
+        "Does not guess an issue number when no matching issue is found"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "The issue's failed-linter log is cut off. Continue the investigation without guessing what the missing lines say.",
+      "expected_output": "The skill opens the linked workflow run and retrieves failed-job logs, rather than inferring missing details from a truncated excerpt.",
+      "assertions": [
+        "Uses `gh run view <id> --log-failed` when issue logs are truncated or empty",
+        "Reports the workflow run or missing run identifier if the full log cannot be retrieved",
+        "Does not invent findings absent from the available logs"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "The issue reports a Markdown lint failure. Reproduce the relevant check locally before changing files.",
+      "expected_output": "The skill inspects the repository's Makefile and linter configuration, then runs the existing lint target or only the failing linter if no target exists.",
+      "assertions": [
+        "Inspects the repository Makefile for `lint`, `fmt`, or equivalent targets",
+        "Runs the repository lint target when it exists",
+        "Otherwise runs only the failing linter directly, such as `markdownlint` for Markdown"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Fix the reported lint errors, but don't silence the rule or clean up unrelated files.",
+      "expected_output": "The skill fixes the root cause in the reported files and direct dependencies, avoids unrelated edits, and scopes any justified exemption narrowly with an explanation.",
+      "assertions": [
+        "Limits edits to files named in findings and their direct dependencies",
+        "Does not disable a lint rule merely to silence the reported finding",
+        "Explains any narrowly scoped exemption when the rule is genuinely inappropriate"
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Make sure the fix survives the project's `make fmt` command.",
+      "expected_output": "The skill runs formatting, inspects the resulting diff, reconciles formatter and linter configuration if they conflict, then repeats formatting until a second pass is clean.",
+      "assertions": [
+        "Runs `make fmt` before judging formatter stability",
+        "Checks whether formatting rewrites the fix and resolves conflicts in configuration when needed",
+        "Confirms a second `make fmt` introduces no additional changes"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "The lint fix works locally. Add only the preventive action that fits this failure and verify it again.",
+      "expected_output": "The skill selects a prevention measure relevant to the finding, then formats and reruns the affected linters without introducing unrelated tooling or documentation.",
+      "assertions": [
+        "Chooses a preventive action tied to the reported lint failure",
+        "Does not add tooling the repository does not already use unless necessary",
+        "Runs formatting and the relevant lint checks after the preventive change"
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "The issue is fixed and passing. Please finish the local work, but don't push anything or close the GitHub issue.",
+      "expected_output": "The skill reports the file, rule, fix, prevention, and validation status, and leaves the issue open without pushing changes.",
+      "assertions": [
+        "Reports each finding's file, rule, fix, and preventive action",
+        "Does not push changes",
+        "Does not close the GitHub issue"
+      ],
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "I only know that CI failed, but I don't have a checkout or issue URL. Can you apply a fix anyway?",
+      "expected_output": "The skill does not fabricate a failure or edit an unrelated repository; it asks for the issue or target checkout needed to inspect and reproduce the finding.",
+      "assertions": [
+        "Does not create a speculative code change without the issue details or target checkout",
+        "States which missing input is needed to continue",
+        "Does not claim that validation passed without running the relevant check"
+      ],
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "skill_name": "repair-knowledge-base",
+  "description": "Evaluates completed-repair capture, retrieval and plan adaptation, node portability, outcomes, and exact OpenViking synchronization behavior.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We fixed a GitHub Actions metric overcount. Capture the completed repair in the repair knowledge base with the commands and verification evidence from this session.",
+      "expected_output": "The skill preserves the session as a trajectory, checks for an existing localization node before adding one, emits a schema-compliant node from a template, validates and indexes it, and mirrors the completed files only after browsing OpenViking.",
+      "assertions": [
+        "Stores raw session steps under `.repair-kb/trajectories/` as provenance",
+        "Queries `scripts/kb.py query --stage localization --text \"<the symptom>\"` before creating a node",
+        "Runs `python3 scripts/kb.py validate && python3 scripts/kb.py index` after writing nodes",
+        "Browses the memory root and verifies exact OpenViking writes before claiming synchronization"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "A localization node already describes this same failure and repair. Should we add another node for a second repository?",
+      "expected_output": "The skill avoids a duplicate and updates the existing node with any new evidence or portability details that the repair supports.",
+      "assertions": [
+        "Uses the localization query to find an existing matching node before adding one",
+        "Edits an existing node when it already covers the repair instead of creating a duplicate",
+        "Does not promote the node's abstraction level without supporting evidence"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "A Node.js service has the error 'connection pool exhausted'. Retrieve relevant prior repair guidance and turn it into a plan for this repository.",
+      "expected_output": "The skill queries the localization stage with the symptom and target ecosystem, filters out incompatible guidance, adapts retained actions to real paths and commands, and ends with observable verification.",
+      "assertions": [
+        "Queries with `--stage localization`, the current symptom, and the target language and ecosystem",
+        "Rejects nodes whose portability excludes the target stack or whose procedure is only lexically similar",
+        "Instantiates retained actions with target-repository paths, commands, pitfalls, and verification"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Review these draft nodes: one is repo-specific, one is a reusable tactic across Maven projects, and one is a general measurement principle. Check their portability metadata.",
+      "expected_output": "The skill keeps L1 repo-specific, L2 project-agnostic, and L3 universal, and checks that transfer levels agree with portability metadata; L3 uses wildcard language, ecosystem, and tool values.",
+      "assertions": [
+        "Requires `transfer: repo-specific` for L1 and `transfer: project-agnostic` for L2",
+        "Requires `transfer: universal` and `languages`, `ecosystems`, and `tools` set to `[\"*\"]` for L3",
+        "Rejects an L3 node that names a specific file, tool, or repository in its principle"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "I have enough evidence for one L1 repair node and want to abstract it to L2 and L3. Use the skill's abstraction guidance.",
+      "expected_output": "The skill groups consecutive steps without reordering or dropping them, removes repository-specific detail at L2, removes tools and repositories at L3, and stops abstraction when evidence is insufficient or actionability would be lost.",
+      "assertions": [
+        "Uses the grouping and abstraction prompts in `references/abstraction-prompts.md`",
+        "Keeps pitfalls grounded in actual dead ends and applicable conditions observable before the fix",
+        "Does not emit a level above L1 when the input contains no verification evidence"
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "I reused two nodes in a repair: one worked partially and one pointed us to the wrong component. Record the outcomes.",
+      "expected_output": "The skill records the appropriate outcome labels for each node and reports which node fields should be revised for non-verified results.",
+      "assertions": [
+        "Uses `scripts/kb.py outcome --label partial` for the partially successful node",
+        "Uses `wrong-location` for the node that targeted the wrong component",
+        "Carries the CLI's suggested field revisions forward rather than treating counters alone as a content update"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "The local repair nodes validate, but this runtime has no OpenViking browse or write tools. Finish without claiming the memory copy exists.",
+      "expected_output": "The skill keeps the validated local knowledge base, reports synchronization as pending, and identifies the local files that still need mirroring.",
+      "assertions": [
+        "Does not guess a URI scheme or claim that a local file is already in OpenViking",
+        "Reports memory synchronization as pending when no memory tool is exposed",
+        "Includes the local knowledge-base paths that remain to be synchronized"
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "We want to save a fix, but nobody has provided the actual steps, verification result, or repository context. Create a general node from what you can infer.",
+      "expected_output": "The skill does not invent repair details or promote unsupported guidance; it requests the completed repair evidence and repository context required for a useful node.",
+      "assertions": [
+        "Does not invent key actions, pitfalls, verification, or provenance",
+        "Requests the missing repair steps, verification evidence, and repository context",
+        "Does not create an L2 or L3 node without evidence supporting that abstraction"
+      ],
+      "files": []
+    }
+  ]
+}

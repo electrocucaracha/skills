@@ -1,34 +1,94 @@
 {
+  "skill_name": "k8s-es-translation-audit",
+  "description": "Evaluates bilingual coverage, scoped and full audits, structural and style findings, traffic prioritization, report contents, and failure handling.",
   "evals": [
     {
-      "name": "pr-number-review-flow",
-      "prompt": "Review Kubernetes Spanish translation PR 55868 in the local kubernetes website repo.",
-      "expected": "The skill treats 55868 as a pull request number, fetches the changed Spanish documentation files, maps each edited content/es path to its English source path, checks structural fidelity before wording, and returns a severity-ranked review report with a final verdict."
+      "id": 1,
+      "prompt": "Audit the full Kubernetes website for missing and outdated Spanish translations and save the issue-ready report.",
+      "expected_output": "The skill performs a shallow sparse checkout of the required language trees, runs the auditor and report generator, verifies the output, and prints the report path.",
+      "assertions": [
+        "Uses the documented shallow sparse checkout rather than a full clone",
+        "Runs `scripts/audit.py` and then `scripts/report.py` with the generated results JSON",
+        "Verifies that the report exists and contains more than 100 lines"
+      ],
+      "files": []
     },
     {
-      "name": "pr-url-review-flow",
-      "prompt": "Use k8s-es-docs-review on https://github.com/kubernetes/website/pull/55868.",
-      "expected": "The skill extracts the repository and PR number from the URL, reviews the PR as a Kubernetes website translation change, and reports findings grouped by file and severity."
+      "id": 2,
+      "prompt": "Run the Spanish translation audit only for `docs/tasks/`, use strict alignment checks, and save the report at `/tmp/tasks-audit.md`.",
+      "expected_output": "The skill passes the requested subtree to the auditor, applies strictness to report generation, writes to the requested output path, and describes the report as limited to that scope.",
+      "assertions": [
+        "Passes `--scope docs/tasks/` to `scripts/audit.py`",
+        "Passes `--strictness strict` and `--out /tmp/tasks-audit.md` to `scripts/report.py`",
+        "Does not describe out-of-scope pages as audited"
+      ],
+      "files": []
     },
     {
-      "name": "english-source-mapping",
-      "prompt": "Compare content/es/training/_index.html against its English source.",
-      "expected": "The skill maps content/es/training/_index.html to content/en/training/_index.html, checks headings, paragraphs, lists, code blocks, and other meaning-bearing structure, and flags any missing or structurally divergent content."
+      "id": 3,
+      "prompt": "Explain how the audit prioritizes missing translations when Hugo weight, translation coverage in other languages, and source length differ.",
+      "expected_output": "The skill explains the score formula and the roles of section tier, Hugo weight, cross-language coverage, and the quick-win source-length adjustment, while clarifying that Hugo weight is only a traffic proxy.",
+      "assertions": [
+        "Gives the documented score formula: `(tier × 10,000 + hugo_weight) − (min(cross_lang, 8) × 200) − max(0, 500 − file_lines)`",
+        "Explains that section tier, Hugo weight, cross-language coverage, and source length contribute to priority",
+        "States that Hugo navigation weight is a prioritization proxy, not measured page views"
+      ],
+      "files": []
     },
     {
-      "name": "language-and-tone-review",
-      "prompt": "Identify Spanish grammar, typo, and tone issues in this Kubernetes translation PR.",
-      "expected": "The skill checks grammar, spelling, punctuation, literal translation artifacts, terminology consistency, and tone against nearby Spanish Kubernetes docs or fallback Spanish documentation references when the section is new."
+      "id": 4,
+      "prompt": "What does the audit mean by structural alignment, and which page structures does it compare between English and Spanish?",
+      "expected_output": "The skill distinguishes structural evidence from proof of semantic mistranslation and identifies heading hierarchy, paragraph counts by section, list-item counts, and code-block counts as comparison signals.",
+      "assertions": [
+        "Names heading hierarchy, paragraph block counts per section, list-item counts, and code-block counts",
+        "Explains that detected structural drift is evidence for review, not proof that meaning changed",
+        "Describes paired files as having alignment results"
+      ],
+      "files": []
     },
     {
-      "name": "github-cli-fallback",
-      "prompt": "The local checkout does not have the PR branch. How should the skill fetch PR metadata and diff details?",
-      "expected": "The skill instructs the reviewer to use GitHub CLI commands such as gh auth status, gh repo set-default kubernetes/website, gh pr view, gh pr diff, gh pr view --comments, and gh pr checkout when local context is incomplete."
+      "id": 5,
+      "prompt": "Summarize the Spanish style checks used in the audit and explain what a style finding should include.",
+      "expected_output": "The skill names STYLE-001 clúster/cluster, STYLE-002 tú/usted register, and STYLE-003 Deployment API terminology, and ensures every style claim has evidence in the report.",
+      "assertions": [
+        "Identifies STYLE-001 as mixed `clúster` versus `cluster` usage",
+        "Identifies STYLE-002 as mixed imperative register and STYLE-003 as inconsistent Deployment API terminology",
+        "Requires at least one evidence item for every style claim"
+      ],
+      "files": []
     },
     {
-      "name": "draft-review-comments",
-      "prompt": "Return comment-ready suggestions for a translation that is structurally correct but uses awkward literal Spanish.",
-      "expected": "The skill converts findings into short reviewer comments that explain the issue, distinguish translation accuracy from style, and suggest replacement wording or requested changes that can be pasted into GitHub."
+      "id": 6,
+      "prompt": "What sections and ranked lists should I expect in the generated report?",
+      "expected_output": "The skill describes the report metadata and methodology, summary, traffic-ranked missing and drifted pages, quick wins, full gap lists, style findings, issue candidates, and next actions.",
+      "assertions": [
+        "Includes traffic-prioritized top-50 missing translations and top-30 drifted pairs",
+        "Includes Quick Wins, full missing and orphan lists, style findings, issue candidates, and a next-actions checklist",
+        "Includes summary counts and the priority-score methodology"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "The shallow sparse clone failed. Try a full clone so the audit can finish.",
+      "expected_output": "The skill stops, reports the clone error, and asks the user to provide a manually cloned repository path rather than expanding the download without confirmation.",
+      "assertions": [
+        "Stops when the sparse clone fails and reports the exact error",
+        "Does not fall back to a full clone without user confirmation",
+        "Offers the `--repo` path as the manual-clone continuation"
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "The auditor found some Markdown files it could not parse, but it successfully analyzed the rest. Should the report be discarded?",
+      "expected_output": "The skill continues with the available results, keeps parsing failures visible in the report, and reports any incomplete classification rather than hiding errors.",
+      "assertions": [
+        "Continues when `audit.py` partially fails on individual files",
+        "Lists failed files and errors in the report",
+        "Does not claim complete classification for files that failed to parse"
+      ],
+      "files": []
     }
   ]
 }

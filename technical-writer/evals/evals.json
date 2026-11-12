@@ -1,0 +1,116 @@
+{
+  "skill_name": "technical-writer",
+  "description": "Evaluates content-type selection, Diataxis structure, audits, writing style, architecture, partner documentation, and progressive disclosure.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We need a page for developers who already know our API basics and need to configure retry handling for failed deliveries. Help me shape it.",
+      "expected_output": "The skill identifies a task-oriented how-to guide, frames it around the reader's goal, assumes baseline competence, and includes focused prerequisites, conditional steps, verification, and related guidance.",
+      "assertions": [
+        "Classifies the request as a how-to guide rather than a tutorial or reference page",
+        "Frames the title and content around accomplishing the delivery-retry task, not around an API feature name",
+        "Includes task prerequisites and an observable verification step"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Write a tutorial that helps a new developer build a small working event receiver, using one concrete path and showing the response after each meaningful step.",
+      "expected_output": "The skill describes the working artifact up front, guides the learner through one sequential path, minimizes theory, and gives visible expected results at meaningful steps.",
+      "assertions": [
+        "Describes what the reader will build rather than promising what they will learn",
+        "Uses one concrete path without offering unnecessary alternatives",
+        "Includes observable expected results and runnable examples for the steps"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Review this API reference draft: it tells readers to configure an API key first, recommends batch mode, and explains why RBAC is used inside the parameter table.",
+      "expected_output": "The skill keeps reference documentation neutral and descriptive, removes instructions, recommendations, and explanatory prose from the reference, and redirects those purposes to how-to or explanation content.",
+      "assertions": [
+        "Identifies setup instructions, recommendations, and rationale as content that does not belong inline in reference documentation",
+        "Rewrites reference material as neutral descriptions of parameters and behavior",
+        "Suggests linking to a how-to guide or explanation for the removed content"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Edit an explanation page about why our event architecture uses durable queues. It currently ends with a numbered deployment procedure.",
+      "expected_output": "The skill keeps the explanation focused on context and rationale, removes step-by-step procedures, and links readers to an appropriate how-to or runbook for deployment actions.",
+      "assertions": [
+        "Keeps the explanation focused on why and conceptual context",
+        "Removes operational step-by-step instructions from the explanation page",
+        "Points to task-oriented documentation for deployment actions"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Audit our developer docs before a release. We have no inventory, and the team wants a list of structural gaps and priorities.",
+      "expected_output": "The skill inventories pages before proposing changes, records attributes such as URL, title, type, owner, freshness, and accuracy, classifies content by Diataxis purpose, and identifies gaps and maturity priorities.",
+      "assertions": [
+        "Starts with an inventory of documentation pages before recommending edits",
+        "Classifies pages into Diataxis content types and identifies gaps or overlaps",
+        "Uses the Seeds, Foundation, Integration, and Excellence maturity model to assess readiness"
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Review the Python quickstart example. It uses `DatabaseClient` without importing or initializing it and never shows the expected result.",
+      "expected_output": "The skill flags the example as incomplete and makes it copy-pasteable by including imports, setup, realistic values, the operation, and useful expected output, then verifies it against the current API where possible.",
+      "assertions": [
+        "Identifies missing imports and initialization as defects in the code example",
+        "Requires complete setup, realistic values, and expected output where helpful",
+        "Does not claim an example was tested when it was not run against the current API"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Plan a docs information architecture for a growing product. Current navigation mirrors teams, reaches five levels deep, and the quickstart is buried.",
+      "expected_output": "The skill organizes docs by user need and content type, caps navigation at two levels, and prioritizes the adoption bottleneck, such as helping evaluators or new developers start successfully.",
+      "assertions": [
+        "Recommends organization by documentation type or user outcome rather than internal team",
+        "Keeps navigation to at most two levels of nesting",
+        "Uses the Discover-to-Upgrade adoption funnel to prioritize the current user bottleneck"
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Create a partner integration guide for our webhook API. Include the partner's responsibilities, production readiness, and an escalation path.",
+      "expected_output": "The skill documents both sides of the integration, includes production readiness and support escalation, and frames the guide around the partner's integration task.",
+      "assertions": [
+        "Documents both the API provider's and partner's responsibilities",
+        "Includes a production-readiness checklist",
+        "Includes a support escalation path"
+      ],
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Edit this runbook using our Google documentation style instead of the default Diataxis style. Don't load every reference in the skill.",
+      "expected_output": "The skill classifies the runbook as task-oriented, loads the Google style override and only relevant rules or references, and applies the override while preserving the runbook's operational purpose.",
+      "assertions": [
+        "Loads `references/styles/google.md` for the requested style override",
+        "Loads only the rule files and references relevant to the runbook edit",
+        "Preserves a direct, action-oriented runbook structure"
+      ],
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Improve our docs. I haven't decided whether this is a quickstart, reference page, or audit, and I don't know who the audience is yet.",
+      "expected_output": "The skill asks only for the missing purpose, audience, or scope that changes the document's direction, rather than drafting a speculative document or loading every reference.",
+      "assertions": [
+        "Asks for the intended audience and reader outcome when they change the document's purpose or scope",
+        "Does not choose a content type without enough context to distinguish the requested work",
+        "Uses progressive disclosure instead of loading every rule and reference"
+      ],
+      "files": []
+    }
+  ]
+}
