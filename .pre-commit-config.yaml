@@ -36,7 +36,7 @@ repos:
         language_version: "22.14.0"
         files: \.(md|mdown|markdown)$
   - repo: https://github.com/electrocucaracha/ai-prepare-commit-msg
-    rev: v20.11.0
+    rev: v20.14.1
     hooks:
       - id: ai-prepare-commit
         stages:
