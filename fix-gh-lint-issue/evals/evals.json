@@ -5,11 +5,14 @@
     {
       "id": 1,
       "prompt": "Fix Super-Linter issue #42 in this checkout. The issue has several comments with newer failure logs.",
-      "expected_output": "The skill reads the issue body and all comments, prioritizes the newest failure log, groups findings by linter and file, and confirms the checkout is at or after the reported commit.",
+      "expected_output": "The skill reads the issue body and all comments, prioritizes the newest report and its commit SHA, groups findings by linter and file, and verifies that local HEAD contains that commit.",
       "assertions": [
         "Uses `gh issue view 42 --comments` to inspect the issue and comments",
         "Uses the latest issue comment when it contains a newer failure log",
-        "Checks the reported commit SHA against the current checkout"
+        "Checks the commit SHA from the newest report against HEAD, not only the issue body's SHA",
+        "Prefers the newest report's `super-linter-commit` marker when present",
+        "Does not treat uncommitted worktree changes as evidence that HEAD contains the reported commit",
+        "Uses the reported commit as the compare base and local HEAD as the compare head"
       ],
       "files": []
     },
@@ -63,6 +66,7 @@
       "expected_output": "The skill identifies the formatter used by CI for the affected file type, resolves any conflict with the project's formatter, and confirms a second `make fmt` introduces no additional diff while retaining the intended fix.",
       "assertions": [
         "Identifies the CI formatter and compares it with the formatters in `make fmt`",
+        "Keeps `make fmt` aligned with the formatter that CI checks instead of substituting a different formatter",
         "Resolves conflicting formatter output instead of alternating manual edits",
         "Confirms a second `make fmt` introduces no additional diff without expecting a clean worktree"
       ],
@@ -109,6 +113,18 @@
         "Prioritizes the newest issue comment for the active findings",
         "Runs the issue-relevant formatter and linters after the fix",
         "Reports broader unrelated lint failures without fixing out-of-scope files"
+      ],
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "Pylint reports dozens of findings across Python source and test files, including Click callback false positives and complexity warnings. How should the skill approach the fix?",
+      "expected_output": "The skill groups findings by rule and file, fixes real defects first, uses existing per-file configuration for repository conventions where appropriate, and keeps any justified Pylint exception narrow, explained, and stable after formatting.",
+      "assertions": [
+        "Groups high-volume Pylint findings by rule ID and file before editing",
+        "Does not blanket-disable Pylint rules or add per-line suppressions for every test method",
+        "Uses a narrow explained `disable-next` for framework false positives such as Click command invocation",
+        "Reruns Pylint after the formatter to catch relocated or ineffective pragmas"
       ],
       "files": []
     }

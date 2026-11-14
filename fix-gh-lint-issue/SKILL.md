@@ -41,14 +41,20 @@ The workflow files one open issue per repository:
 - Label: `super-linter-issue`
 - Later failures are added as **comments** on the same issue,
   so read all comments and prefer the newest.
-- The body has `Workflow run:` and `Commit:` lines,
+- The body has a hidden `super-linter-commit: <sha>` marker,
+  `Workflow run:`, `Commit:`, `Ref:`,
+  and a `Failed linters:` line listing the linter names
+  (for example `PYTHON_BLACK`, `PYTHON_PYLINT`),
   then `## Failed linter logs`.
-- Each `### <path>` section holds a 4-space indented log.
-  Structured JSON entries (failed linters only) are used when available;
-  otherwise raw logs.
-- Logs are truncated at about 60 KB.
-  If truncated or empty, open the workflow run URL
+  Older issues lack `Ref:` and `Failed linters:`.
+- Each `### <LINTER>` section holds a 4-space indented log
+  with the `/github/workspace/` prefix removed,
+  so paths are repository-relative.
+  Older issues use `### <results file path>` headings.
+- Each linter gets its own size budget (about 60 KB total);
+  a `[truncated ...]` line means open the workflow run URL
   (`gh run view <id> --log-failed`).
+- A commit already reported is not commented again.
 
 ## Workflow
 
@@ -75,7 +81,33 @@ gh issue view <number> --comments
 ```
 
 Group findings by linter and file.
-Note the commit SHA and confirm the checkout is at or after it.
+When a linter reports many findings (for example Pylint),
+group by rule ID and fix per rule:
+some rules need a repository-wide config choice
+(for example `.pylintrc` or `.python-lint` per-file ignores for tests)
+rather than per-line edits.
+Use the commit SHA from the newest report,
+which may be in a comment rather than the issue body.
+Prefer its `super-linter-commit` marker when present;
+otherwise use that report's `Commit:` line.
+Confirm `HEAD` contains that commit before editing.
+Compare the reported SHA as the base and the local `HEAD` as the head:
+
+```bash
+owner="OWNER"
+repo="REPO"
+reported_sha="REPORTED_SHA"
+gh api "repos/$owner/$repo/compare/$reported_sha...$(git rev-parse HEAD)" \
+  --jq '{status, ahead_by, behind_by}'
+```
+
+Proceed only when `behind_by` is `0`
+and the comparison status is `ahead` or `identical`.
+Dirty worktree changes do not advance `HEAD`
+and do not satisfy this check.
+If the checkout is behind or the comparison cannot be verified,
+do not patch against the stale revision;
+preserve the worktree and ask for an updated checkout or permission to sync it.
 
 ### 2. Reproduce locally
 
@@ -111,6 +143,8 @@ that can rewrite a fix back into a failing form.
 1. Inspect the `fmt` target and the CI linter configuration
    for the formatter used on each affected file type.
    Treat the CI formatter as the source of truth.
+   For example, a `PYTHON_BLACK` failure requires Black-compatible output;
+   a passing `ruff format --check` is not a substitute when the two disagree.
 2. Run `make fmt` and inspect the diff for expected and incidental changes.
 3. If formatting conflicts with CI,
    reconcile the commands or configuration instead of alternating edits.
@@ -165,6 +199,17 @@ or when the user closes it.
 ## Gotchas
 
 - Issue comments, not the body, hold the latest failure after the first run.
+- Black diffs and MyPy/Pylint findings often co-occur on the same files;
+  fix types and structure first, then run the formatter last.
+- Pylint `E1120` on decorator-based CLIs (click/typer)
+  is a false positive; scope a `disable-next` directive instead of rewriting.
+- Keep Pylint exceptions narrow and formatter-stable:
+  put `disable-next` directly above the reported call or function definition,
+  explain the framework or lifecycle reason,
+  then rerun Pylint after `make fmt`.
+- When local mypy reports missing third-party modules or stubs,
+  use the project's declared environment when available
+  and distinguish environment-only import errors from the issue's findings.
 - The log excerpt may include only failed linters.
 - Callers can pass `validate_overrides` (`VALIDATE_*` flags)
   in their workflow file;
