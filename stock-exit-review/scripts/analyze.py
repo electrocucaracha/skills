@@ -181,9 +181,7 @@ def features(frame) -> dict:
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
 # The Click options intentionally remain explicit at the CLI boundary.
 # pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
-def main(
-    ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output
-) -> None:
+def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> None:
     """Generate and write a point-in-time market analysis."""
     today = dt.datetime.now(dt.UTC).date()
     as_of = as_of.date() if as_of else (today - dt.timedelta(days=1))

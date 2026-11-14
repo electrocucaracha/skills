@@ -267,9 +267,7 @@ def pending_command(root, ticker) -> None:
 @click.pass_obj
 # The verification command exposes each confirmation field as a CLI option.
 # pylint: disable-next=too-many-arguments,too-many-positional-arguments
-def confirm_command(
-    root, ticker, record_id, ov_uri, ov_digest, now
-) -> None:
+def confirm_command(root, ticker, record_id, ov_uri, ov_digest, now) -> None:
     """Mark a capture verified after matching its remote read-back."""
     manifest = load_manifest(root, ticker)
     rec = manifest["records"].get(record_id)

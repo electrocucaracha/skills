@@ -53,11 +53,7 @@ class WorkflowChecks(unittest.TestCase):
         """Create isolated paths and representative analysis fixtures."""
         # enterContext registers cleanup for the whole test, unlike a local with.
         # pylint: disable=consider-using-with
-        self.root = Path(
-            self.enterContext(
-                tempfile.TemporaryDirectory()
-            )
-        )
+        self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self.analysis = {
             "ticker": "AAPL",
             "as_of": "2026-10-26",
