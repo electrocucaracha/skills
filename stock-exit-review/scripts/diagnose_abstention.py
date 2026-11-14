@@ -23,6 +23,7 @@ QUESTIONS = ("trend", "risk", "downside")
 
 
 def load_observations(root: str, ticker: str):
+    """Load existing observations and extract available confidence scores."""
     path = os.path.join(root, ticker, "observations")
     rows = []
     for p in sorted(glob.glob(os.path.join(path, "*.json"))):
@@ -50,6 +51,7 @@ def load_observations(root: str, ticker: str):
 
 
 def main() -> int:
+    """Report which confidence threshold most often blocks a decision."""
     ap = argparse.ArgumentParser(description="Diagnose decision abstentions.")
     ap.add_argument(
         "--root", required=True, help="history root containing <ticker>/observations/"
@@ -88,7 +90,7 @@ def main() -> int:
         else:
             print(f"{q:<8}   0  {'-':>6} {'-':>6} {'-':>6}  0/{n}")
 
-    binding = max(fails, key=fails.get)
+    binding = max(fails, key=lambda question: fails[question])
     print(
         f"\nbinding constraint: '{binding}' "
         f"(fails the floor on {fails[binding]}/{n} dates)"

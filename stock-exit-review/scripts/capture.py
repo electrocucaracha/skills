@@ -52,11 +52,13 @@ from atomicwrites import atomic_write
 
 
 def read_json(path: str | Path) -> dict:
+    """Read a JSON object from disk."""
     with open(path, encoding="utf-8") as handle:
         return json.load(handle)
 
 
 def write_json(path: str | Path, data: dict, *, immutable: bool = False) -> bool:
+    """Atomically write JSON, preserving immutable records."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     rendered = json.dumps(data, sort_keys=True, allow_nan=False, indent=2)
@@ -69,7 +71,7 @@ def write_json(path: str | Path, data: dict, *, immutable: bool = False) -> bool
 
 
 def identity(analysis: dict, decision: dict) -> str:
-    # Mirrors history.identity() exactly so capture ids == observation ids.
+    """Return the stable id shared by capture and observation records."""
     key = [
         analysis["ticker"],
         analysis["as_of"],
@@ -80,10 +82,12 @@ def identity(analysis: dict, decision: dict) -> str:
 
 
 def _now(iso: str | None) -> str:
+    """Return the supplied timestamp or the current UTC time."""
     return iso if iso else dt.datetime.now(dt.UTC).isoformat()
 
 
 def load_manifest(root: Path, ticker: str) -> dict:
+    """Load a ticker manifest, returning an empty one when absent."""
     path = root / ticker / "manifest.json"
     return (
         read_json(path)
@@ -93,6 +97,7 @@ def load_manifest(root: Path, ticker: str) -> dict:
 
 
 def save_manifest(root: Path, manifest: dict) -> None:
+    """Persist a ticker manifest."""
     write_json(root / manifest["ticker"] / "manifest.json", manifest)
 
 
@@ -105,6 +110,7 @@ def save_manifest(root: Path, manifest: dict) -> None:
 )
 @click.pass_context
 def main(ctx, root) -> None:
+    """Set the resolved persistent capture root for subcommands."""
     ctx.obj = root.expanduser().resolve()
 
 
@@ -140,9 +146,12 @@ def main(ctx, root) -> None:
 )
 @click.option("--now", default=None, help="ISO timestamp override (backfill / tests).")
 @click.pass_obj
+# The command accepts each capture field as an explicit CLI option.
+# pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
 def capture_command(
     root, analysis, decision, evaluation, explanation, ov_status, ov_uri, ov_digest, now
 ) -> None:
+    """Persist a capture and update its OpenViking reconciliation manifest."""
     analysis = read_json(analysis)
     decision = read_json(decision)
     if (
@@ -223,6 +232,7 @@ def capture_command(
 @click.option("--ticker", default=None, help="Restrict to one ticker namespace.")
 @click.pass_obj
 def pending_command(root, ticker) -> None:
+    """List captures whose OpenViking mirror is not verified."""
     tickers = [ticker] if ticker else [d.name for d in root.iterdir() if d.is_dir()]
     out = []
     for t in tickers:
@@ -255,7 +265,12 @@ def pending_command(root, ticker) -> None:
 @click.option("--ov-digest", required=True, help="Digest of the read-back content.")
 @click.option("--now", default=None, help="ISO timestamp override.")
 @click.pass_obj
-def confirm_command(root, ticker, record_id, ov_uri, ov_digest, now) -> None:
+# The verification command exposes each confirmation field as a CLI option.
+# pylint: disable-next=too-many-arguments,too-many-positional-arguments
+def confirm_command(
+    root, ticker, record_id, ov_uri, ov_digest, now
+) -> None:
+    """Mark a capture verified after matching its remote read-back."""
     manifest = load_manifest(root, ticker)
     rec = manifest["records"].get(record_id)
     if rec is None:
@@ -293,6 +308,7 @@ def confirm_command(root, ticker, record_id, ov_uri, ov_digest, now) -> None:
 @click.option("--ticker", default=None)
 @click.pass_obj
 def report_command(root, ticker) -> None:
+    """Summarize capture and OpenViking synchronization status."""
     tickers = [ticker] if ticker else [d.name for d in root.iterdir() if d.is_dir()]
     counts = {"verified": 0, "sync_pending": 0, "failed": 0, "na": 0}
     pending, ranges = [], {}
@@ -331,6 +347,7 @@ def report_command(root, ticker) -> None:
 
 
 def _load_maybe_json(path: str | Path):
+    """Load JSON content, returning plain text when it is not JSON."""
     text = Path(path).read_text(encoding="utf-8")
     try:
         return json.loads(text)
@@ -340,6 +357,6 @@ def _load_maybe_json(path: str | Path):
 
 if __name__ == "__main__":
     try:
-        main()
+        main.main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit("capture failed: " + str(error)) from None

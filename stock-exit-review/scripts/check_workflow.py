@@ -47,10 +47,17 @@ from click.testing import CliRunner
 
 
 class WorkflowChecks(unittest.TestCase):
+    """Exercise offline analysis, decision, history, and preflight workflows."""
+
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        """Create isolated paths and representative analysis fixtures."""
+        # enterContext registers cleanup for the whole test, unlike a local with.
+        # pylint: disable=consider-using-with
+        self.root = Path(
+            self.enterContext(
+                tempfile.TemporaryDirectory()
+            )
+        )
         self.analysis = {
             "ticker": "AAPL",
             "as_of": "2026-10-26",
@@ -105,6 +112,7 @@ class WorkflowChecks(unittest.TestCase):
         }
 
     def test_indicators_and_csv_validation(self):
+        """Validate indicators and CSV price input constraints."""
         close = pd.Series(range(100, 200), dtype=float)
         frame = pd.DataFrame(
             {
@@ -150,6 +158,7 @@ class WorkflowChecks(unittest.TestCase):
             analyze.load_prices("AAPL", str(path), dt.date(2026, 10, 30))
 
     def test_assessment_branches(self):
+        """Cover each conservative assessment outcome."""
         self.assertEqual(decide.assessment(self.answers, 0.6)[0], "hold")
         self.answers["risk"]["choice"] = "elevated"
         self.assertEqual(
@@ -164,6 +173,7 @@ class WorkflowChecks(unittest.TestCase):
         )
 
     def test_preflight_imports_and_failure_bounds(self):
+        """Check successful, failed, and timed-out runtime probes."""
         run_dir, history_root = self.root / "run", self.root / "history"
         with (
             patch("preflight.shutil.which", return_value="/usr/bin/uv"),
@@ -194,6 +204,7 @@ class WorkflowChecks(unittest.TestCase):
             self.assertEqual(probe.call_count, 3)
 
     def test_preflight_paths_and_missing_uv(self):
+        """Reject unsafe paths and report a missing uv executable."""
         with self.assertRaises(ValueError):
             preflight.check_runtime(Path("relative"), self.root, 10)
         with self.assertRaises(ValueError):
@@ -211,9 +222,12 @@ class WorkflowChecks(unittest.TestCase):
             probe.assert_not_called()
 
     def test_jev_transport_and_validation(self):
+        """Check Jev transport settings and response validation."""
         response = {"model": "offline-fixture", "answers": self.answers}
         with patch("decide.httpx.Client") as client:
-            handle = client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value
+            handle = (
+                client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value
+            )
             handle.iter_bytes.return_value = [json.dumps(response).encode()]
             self.assertEqual(
                 decide.query_jev({}, "fixture", "offline-placeholder"), response
@@ -226,6 +240,7 @@ class WorkflowChecks(unittest.TestCase):
                 decide.query_jev({}, "fixture", "offline-placeholder")
 
     def test_missing_credentials_and_mocked_forecast(self):
+        """Keep missing credentials offline and validate mocked forecasts."""
         today = dt.datetime.now(dt.UTC).date()
         self.analysis["as_of"] = (today - dt.timedelta(days=1)).isoformat()
         input_path, output_path = (
@@ -262,6 +277,7 @@ class WorkflowChecks(unittest.TestCase):
         self.assertNotIn("offline-placeholder", json.dumps(result))
 
     def test_feature_allowlist(self):
+        """Reject unapproved or non-finite decision features."""
         features = self.analysis["features"]
         features["account_identifier"] = "private"
         self.assertNotIn("account_identifier", decide.market_features(features))
@@ -270,6 +286,7 @@ class WorkflowChecks(unittest.TestCase):
             decide.market_features(features)
 
     def test_click_interfaces(self):
+        """Validate CLI help and reject malformed option values."""
         runner = CliRunner()
         for command in (analyze.main, decide.main, history.main):
             invocation = runner.invoke(command, ["--help"])
@@ -327,6 +344,7 @@ class WorkflowChecks(unittest.TestCase):
         self.assertEqual(analyze.read_json(output)["ticker"], "AAPL")
 
     def test_immutable_records_and_context(self):
+        """Preserve immutable observation identity and context output."""
         first = history.record(self.root, self.analysis, self.decision)
         self.assertEqual(first["status"], "created")
         self.analysis["captured_at"] = "new capture"
@@ -344,6 +362,7 @@ class WorkflowChecks(unittest.TestCase):
             history.record(self.root, self.analysis, self.decision)
 
     def test_maturity_scoring_revisions_and_leakage(self):
+        """Score only matured forecasts and reject revised or leaked inputs."""
         observation = {
             "id": "fixture",
             "analysis": self.analysis,

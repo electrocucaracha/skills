@@ -92,6 +92,7 @@ QUESTIONS = {
 
 
 def analysis_hash(analysis: dict) -> str:
+    """Hash decision-relevant analysis fields, excluding capture metadata."""
     payload = {
         key: value
         for key, value in analysis.items()
@@ -103,6 +104,7 @@ def analysis_hash(analysis: dict) -> str:
 
 
 def market_features(features: dict) -> dict:
+    """Select and validate the numeric features allowed in a Jev request."""
     selected = {key: features[key] for key in FEATURE_KEYS}
     if not all(
         value is None
@@ -121,6 +123,10 @@ Probability = Annotated[float, Field(ge=0, le=1)]
 
 
 class ChoiceAnswer(BaseModel):
+    """Validated categorical answer and probability distribution."""
+
+    # Pydantic models are declarative schemas with one validation method.
+    # pylint: disable=too-few-public-methods
     model_config = ConfigDict(strict=True, allow_inf_nan=False)
 
     type: Literal["choice"]
@@ -130,6 +136,7 @@ class ChoiceAnswer(BaseModel):
 
     @model_validator(mode="after")
     def check_distribution(self) -> Self:
+        """Require a normalized distribution and a maximum-probability choice."""
         if not math.isclose(sum(self.probabilities.values()), 1, abs_tol=0.001):
             raise ValueError("Jev probabilities do not sum to one")
         if self.choice not in self.probabilities or (
@@ -140,6 +147,10 @@ class ChoiceAnswer(BaseModel):
 
 
 class JevResponse(BaseModel):
+    """Validated response covering every required Jev question."""
+
+    # Pydantic models are declarative schemas with one validation method.
+    # pylint: disable=too-few-public-methods
     model_config = ConfigDict(strict=True)
 
     model: Annotated[str, Field(min_length=1, max_length=128)]
@@ -147,6 +158,7 @@ class JevResponse(BaseModel):
 
     @model_validator(mode="after")
     def check_questions(self) -> Self:
+        """Require the complete question set and its allowed answer keys."""
         if set(self.answers) != set(QUESTIONS):
             raise ValueError("invalid Jev answer schema")
         for name, answer in self.answers.items():
@@ -156,6 +168,7 @@ class JevResponse(BaseModel):
 
 
 def query_jev(state: dict, model: str, token: str) -> dict:
+    """Request and validate a bounded Jev response over TLS 1.3."""
     body = json.dumps(
         {"state": state, "model": model, "questions": QUESTIONS}, allow_nan=False
     ).encode()
@@ -184,6 +197,7 @@ def query_jev(state: dict, model: str, token: str) -> dict:
 
 
 def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
+    """Apply the conservative trend, risk, and downside decision policy."""
     if any(answer["confidence"] < minimum for answer in answers.values()):
         return "insufficient_evidence", ["low Jev classification confidence"]
     trend, risk = answers["trend"]["choice"], answers["risk"]["choice"]
@@ -205,7 +219,7 @@ def build_summary(result: dict) -> dict:
         "review_exit": "SELL",
         "insufficient_evidence": "NO_DECISION",
     }
-    verdict = verdict_map.get(result.get("assessment"), "NO_DECISION")
+    verdict = verdict_map.get(str(result.get("assessment")), "NO_DECISION")
     answers = result.get("answers") or {}
     key_signals = {
         q: {"choice": a["choice"], "confidence": a["confidence"]}
@@ -279,6 +293,8 @@ def build_summary(result: dict) -> dict:
 )
 @click.option("--model", envvar="JEV_MODEL", default="jev-latest", show_default=True)
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
+# The Click options intentionally remain explicit at the CLI boundary.
+# pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
 def main(
     analysis_path,
     context_path,
@@ -288,6 +304,7 @@ def main(
     model,
     output,
 ) -> None:
+    """Create a conservative decision from analysis and optional history."""
     analysis = read_json(analysis_path)
     ticker_value(analysis["ticker"])
     as_of = dt.date.fromisoformat(analysis["as_of"])
@@ -377,7 +394,7 @@ def main(
 
 if __name__ == "__main__":
     try:
-        main()
+        main.main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit(
             "decision input/output failed: " + type(error).__name__

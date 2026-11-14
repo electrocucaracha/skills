@@ -40,6 +40,7 @@ from decide import analysis_hash
 
 
 def record(root: Path, analysis: dict, decision: dict) -> dict:
+    """Write an immutable observation after validating its decision hash."""
     ticker = ticker_value(analysis["ticker"])
     if decision["ticker"] != ticker or decision["as_of"] != analysis["as_of"]:
         raise ValueError("analysis and decision identity mismatch")
@@ -70,6 +71,7 @@ def record(root: Path, analysis: dict, decision: dict) -> dict:
 
 
 def prices(series: list[dict]) -> dict[str, float]:
+    """Validate and index an ascending historical price series."""
     result = {}
     for item in series:
         date = dt.date.fromisoformat(item["date"]).isoformat()
@@ -86,7 +88,10 @@ def prices(series: list[dict]) -> dict[str, float]:
     return result
 
 
+# The guard clauses keep forecast eligibility checks explicit and ordered.
+# pylint: disable-next=too-many-locals,too-many-return-statements
 def evaluate_one(observation: dict, latest: dict) -> dict | None:
+    """Score one matured forecast, returning None when it is not evaluable."""
     analysis, decision = observation["analysis"], observation["decision"]
     forecast = decision["forecast"]
     if forecast is None:
@@ -158,6 +163,7 @@ def evaluate_one(observation: dict, latest: dict) -> dict | None:
 
 
 def evaluate(root: Path, latest: dict) -> dict:
+    """Evaluate newly matured observations for a ticker."""
     ticker = ticker_value(latest["ticker"])
     updates, pending = [], []
     if latest["data_quality"]["usable"] is not True:
@@ -186,6 +192,7 @@ def evaluate(root: Path, latest: dict) -> dict:
 
 
 def context(root: Path, ticker: str) -> dict:
+    """Export recent observations and grouped evaluation scores."""
     observations = []
     for path in (root / ticker / "observations").glob("*.json"):
         observation = read_json(path)
@@ -202,7 +209,7 @@ def context(root: Path, ticker: str) -> dict:
             }
         )
     observations.sort(key=lambda item: (item["as_of"], item["id"]))
-    groups = {}
+    groups: dict[str, list[float]] = {}
     for path in (root / ticker / "evaluations").glob("*.json"):
         outcome = read_json(path)
         if outcome["status"] != "evaluated":
@@ -228,6 +235,7 @@ def context(root: Path, ticker: str) -> dict:
 @click.option("--root", type=click.Path(file_okay=False, path_type=Path), required=True)
 @click.pass_context
 def main(ctx, root) -> None:
+    """Set the resolved history root for subcommands."""
     ctx.obj = root.expanduser().resolve()
 
 
@@ -236,6 +244,7 @@ def main(ctx, root) -> None:
 @click.option("--decision", type=click.Path(exists=True, dir_okay=False), required=True)
 @click.pass_obj
 def record_command(root, analysis, decision) -> None:
+    """Record an analysis and its decision."""
     result = record(root, read_json(analysis), read_json(decision))
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
 
@@ -246,6 +255,7 @@ def record_command(root, analysis, decision) -> None:
 @click.option("--analysis", type=click.Path(exists=True, dir_okay=False), required=True)
 @click.pass_obj
 def evaluate_command(root, analysis) -> None:
+    """Evaluate matured forecasts from the latest analysis."""
     result = evaluate(root, read_json(analysis))
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
 
@@ -257,6 +267,7 @@ def evaluate_command(root, analysis) -> None:
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
 @click.pass_obj
 def context_command(root, ticker, output) -> None:
+    """Write recent ticker history to a JSON file."""
     result = context(root, ticker)
     write_json(output, result)
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
@@ -264,6 +275,6 @@ def context_command(root, ticker, output) -> None:
 
 if __name__ == "__main__":
     try:
-        main()
+        main.main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit("history failed: " + str(error)) from None

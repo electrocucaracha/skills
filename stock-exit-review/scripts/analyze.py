@@ -41,17 +41,20 @@ from atomicwrites import atomic_write
 
 
 def ticker_value(value: str) -> str:
+    """Normalize and validate a market ticker."""
     value = value.upper()
     if not re.fullmatch(r"[A-Z0-9^][A-Z0-9.^=-]{0,31}", value):
         raise click.BadParameter("invalid provider ticker")
     return value
 
 
-def ticker_option(ctx, param, value):
+def ticker_option(_ctx, _param, value):
+    """Validate an optional ticker supplied through Click."""
     return ticker_value(value) if value is not None else None
 
 
 def read_json(path: str | Path) -> dict:
+    """Read a bounded JSON object from disk."""
     path = Path(path)
     if path.stat().st_size > 5_000_000:
         raise ValueError("JSON input exceeds 5 MB")
@@ -62,6 +65,7 @@ def read_json(path: str | Path) -> dict:
 
 
 def write_json(path: str | Path, data: dict, *, immutable: bool = False) -> bool:
+    """Atomically write JSON, optionally preserving an existing record."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     payload = json.dumps(data, indent=2, sort_keys=True, allow_nan=False) + "\n"
@@ -76,6 +80,9 @@ def write_json(path: str | Path, data: dict, *, immutable: bool = False) -> bool
 
 
 def load_prices(ticker: str, csv: str | None, as_of: dt.date):
+    """Load and validate daily OHLCV prices for a ticker."""
+    # Keep optional market-data dependencies unloaded for offline operations.
+    # pylint: disable=import-outside-toplevel
     import numpy as np
     import pandas as pd
 
@@ -123,6 +130,9 @@ def load_prices(ticker: str, csv: str | None, as_of: dt.date):
 
 
 def features(frame) -> dict:
+    """Calculate the technical indicators used by the decision policy."""
+    # Keep the optional indicator package unloaded for non-analysis commands.
+    # pylint: disable=import-outside-toplevel
     from ta.momentum import RSIIndicator
     from ta.trend import MACD, SMAIndicator
     from ta.volatility import AverageTrueRange
@@ -169,7 +179,12 @@ def features(frame) -> dict:
     "--max-age-days", type=click.IntRange(0, 30), default=7, show_default=True
 )
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
-def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> None:
+# The Click options intentionally remain explicit at the CLI boundary.
+# pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
+def main(
+    ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output
+) -> None:
+    """Generate and write a point-in-time market analysis."""
     today = dt.datetime.now(dt.UTC).date()
     as_of = as_of.date() if as_of else (today - dt.timedelta(days=1))
     if as_of > today:
@@ -221,6 +236,6 @@ def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> 
 
 if __name__ == "__main__":
     try:
-        main()
+        main.main()
     except (ValueError, KeyError, OSError, ImportError) as error:
         raise SystemExit("analysis failed: " + str(error)) from None
