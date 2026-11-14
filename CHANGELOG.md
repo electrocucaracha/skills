@@ -55,7 +55,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Enabled automated assessment of skill correctness, automated review requests for code changes, and simplified GitHub Actions workflow, while updating plugin and workflow versions to ensure consistency with recent improvements and fixes from dependencies, and introducing codebase consistency enhancements through editor and linter configuration files, refined markdownlint settings, and updated Python script docstrings and documentation. [dbb5ccf5](https://github.com/electrocucaracha/skills/commit/dbb5ccf5256aa5259c1a2af06aeaa6427ea8e427)
+- Enabled automated assessment of skill correctness,
+  automated review requests for code changes,
+  and simplified GitHub Actions workflow,
+  while updating plugin and workflow versions to ensure consistency with
+  recent improvements and fixes from dependencies,
+  and introducing codebase consistency enhancements through editor and
+  linter configuration files,
+  refined markdownlint settings,
+  and updated Python script docstrings and documentation.
+  [dbb5ccf5](https://github.com/electrocucaracha/skills/commit/dbb5ccf5256aa5259c1a2af06aeaa6427ea8e427)
 
 ## [5.10.2] - 2026-11-11
 
