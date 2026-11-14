@@ -24,9 +24,8 @@ index. Pending OpenViking mirrors are reconciled on later runs by exact
 read-back, deduplicated by record id. The capture record is the authoritative
 durable record; OpenViking is a reconciled mirror.
 
-The record id mirrors history.identity() exactly:
-    sha256(json.dumps([ticker, as_of, policy, model_or_requested], sort_keys=True))[:24]
-so a capture id always equals its observation id.
+The record id uses the same identity() helper as history so a capture id always
+equals its observation id.
 
 This script is intentionally self-contained (stdlib + click + atomicwrites
 only) so the capture guarantee holds even when the heavy analysis

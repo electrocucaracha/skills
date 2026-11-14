@@ -29,24 +29,14 @@
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import json
 import math
 from pathlib import Path
 
 import click
 from analyze import read_json, ticker_option, ticker_value, write_json
+from capture import identity
 from decide import analysis_hash
-
-
-def identity(analysis: dict, decision: dict) -> str:
-    key = [
-        analysis["ticker"],
-        analysis["as_of"],
-        decision["policy"],
-        decision["model"] or decision["requested_model"],
-    ]
-    return hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()[:24]
 
 
 def record(root: Path, analysis: dict, decision: dict) -> dict:
