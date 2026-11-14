@@ -60,11 +60,11 @@
     {
       "id": 6,
       "prompt": "Make sure the fix survives the project's `make fmt` command.",
-      "expected_output": "The skill runs formatting, inspects the resulting diff, reconciles formatter and linter configuration if they conflict, then repeats formatting until a second pass is clean.",
+      "expected_output": "The skill identifies the formatter used by CI for the affected file type, resolves any conflict with the project's formatter, and confirms a second `make fmt` introduces no additional diff while retaining the intended fix.",
       "assertions": [
-        "Runs `make fmt` before judging formatter stability",
-        "Checks whether formatting rewrites the fix and resolves conflicts in configuration when needed",
-        "Confirms a second `make fmt` introduces no additional changes"
+        "Identifies the CI formatter and compares it with the formatters in `make fmt`",
+        "Resolves conflicting formatter output instead of alternating manual edits",
+        "Confirms a second `make fmt` introduces no additional diff without expecting a clean worktree"
       ],
       "files": []
     },
@@ -98,6 +98,17 @@
         "Does not create a speculative code change without the issue details or target checkout",
         "States which missing input is needed to continue",
         "Does not claim that validation passed without running the relevant check"
+      ],
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "The latest issue comment reports Ruff and JSCPD failures, but the repository's broader Python lint target also reports older Pylint findings. What should be fixed?",
+      "expected_output": "The skill fixes and verifies the current issue findings, reports unrelated Pylint failures separately, and does not expand the patch to unrelated baseline issues.",
+      "assertions": [
+        "Prioritizes the newest issue comment for the active findings",
+        "Runs the issue-relevant formatter and linters after the fix",
+        "Reports broader unrelated lint failures without fixing out-of-scope files"
       ],
       "files": []
     }

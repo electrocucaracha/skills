@@ -81,10 +81,12 @@ Note the commit SHA and confirm the checkout is at or after it.
 
 Prefer the repository's own targets:
 inspect `Makefile` for `lint`, `fmt`, and similar targets.
-Run the lint target when it exists;
-it usually runs Super-Linter in Docker with the same rules.
-Otherwise run only the failing linters directly
+Check what each target actually runs before choosing it.
+Use a target when it matches the CI checks;
+otherwise run the reported linter directly
 (for example `shellcheck`, `yamllint`, `markdownlint`, `hadolint`).
+Inspect the caller workflow for `VALIDATE_*` overrides
+so local checks match the checks enabled in CI.
 
 Look for linter configs the workflow honors:
 `LINTER_RULES_PATH` is `/`,
@@ -106,17 +108,20 @@ so configs live at the repository root.
 (prettier, shfmt, black, and similar)
 that can rewrite a fix back into a failing form.
 
-1. Read the `fmt` target and note which formatters and configs it uses.
-2. Run `make fmt`, then `git diff`.
-3. If `make fmt` changes or reverts your fix,
-   the formatter and the linter disagree.
-   Reconcile them in config, not by alternating edits:
-   align line length, indentation, quote style, and rule sets
-   (for example prettier vs. yamllint, shfmt vs. shellcheck,
-   black vs. flake8).
-4. Run `make fmt` again until the diff is empty,
-   then rerun the linter.
-   Both must pass in the same tree state.
+1. Inspect the `fmt` target and the CI linter configuration
+   for the formatter used on each affected file type.
+   Treat the CI formatter as the source of truth.
+2. Run `make fmt` and inspect the diff for expected and incidental changes.
+3. If formatting conflicts with CI,
+   reconcile the commands or configuration instead of alternating edits.
+   Prefer one formatter per file type;
+   keep multiple formatters only if they produce the same output.
+   For example, make `fmt` use Ruff when CI checks `ruff format`,
+   rather than letting Black and Ruff rewrite the same file differently.
+4. Run the affected formatter's check and lint again.
+   Then run `make fmt` a second time and confirm it introduces no new diff.
+   Keep the intended fix in the worktree;
+   a clean `git status` is not expected while changes are pending.
 
 ### 5. Add preventive actions
 
@@ -137,9 +142,14 @@ unless nothing else prevents the recurrence.
 
 ### 6. Re-validate and summarize
 
-Run `make fmt` then the lint target (or the narrowed linters).
-Confirm a clean `git status` after a second `make fmt`.
+Run `make fmt`, the affected linters,
+and the full CI-equivalent lint target when one exists.
+If no equivalent target exists,
+run all CI-enabled checks relevant to the changed files.
+Confirm a second `make fmt` introduces no additional changes.
 Report per finding: file, rule, fix, and the preventive action added.
+Report failures from broader, unrelated checks separately;
+do not expand the fix to unrelated baseline issues.
 Do not close the issue or push unless the user asks;
 the issue closes when the workflow next passes
 or when the user closes it.
@@ -147,16 +157,15 @@ or when the user closes it.
 ## Verification
 
 - Confirm the affected linters pass after `make fmt`.
-- Confirm a second formatting pass introduces no additional changes.
+- Confirm a second formatting pass introduces no additional diff
+  while retaining the intended fix.
 - Report each finding's file, rule, fix, and preventive action.
 - Do not push changes or close the issue without an explicit request.
 
 ## Gotchas
 
 - Issue comments, not the body, hold the latest failure after the first run.
-- The log excerpt may include only failed linters;
-  a fix can expose findings from linters that were not listed.
-  Rerun everything.
+- The log excerpt may include only failed linters.
 - Callers can pass `validate_overrides` (`VALIDATE_*` flags)
   in their workflow file;
   check `.github/workflows/` before enabling a linter locally
