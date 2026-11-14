@@ -18,6 +18,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-    uses: electrocucaracha/gh-workflows/.github/workflows/linter.yml@eaf817d527a52410bd6e85ad08a5acbd2039ae3a # v13.3.1
+    uses: electrocucaracha/gh-workflows/.github/workflows/linter.yml@569fd7c08907d5774529175caa0918b29cc73b1d # v13.4.4
     secrets:
       COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

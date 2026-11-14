@@ -9,6 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] - 2026-11-14
+
+### Removed
+
+- Simplified argument lists in analyze.py, capture.py, and check_workflow.py scripts by consolidating multiline options into single lines, improving readability and consistency without introducing functional changes. [a1ae149c](https://github.com/electrocucaracha/skills/commit/a1ae149caf7212aeede2217f1021085318cc834b)
+
+## [5.12.5] - 2026-11-14
+
+### Changed
+
+- Clarified Super-Linter issue handling and linter fix guidance to improve developer experience with enhanced reporting, stricter commit selection, and streamlined workflows. [1a45aec3](https://github.com/electrocucaracha/skills/commit/1a45aec3e8fb22addb2fc65ba61d46dcf9c60fc8)
+
+## [5.12.4] - 2026-11-14
+
+### Changed
+
+- Clarified code intent and behavior across Python scripts, enabling future contributors to better understand and maintain the codebase. [bec9e0c8](https://github.com/electrocucaracha/skills/commit/bec9e0c8ed98c829abd5314db3f381c8375fe015)
+
+## [5.12.3] - 2026-11-14
+
+### Changed
+
+- Unified the Python formatting workflow by replacing Black with Ruff for style checking and formatting, reducing tooling dependencies and aligning with other Ruff-based lint steps. [b26c7df7](https://github.com/electrocucaracha/skills/commit/b26c7df7806316d5358dc7e09b9df505175ab600)
+
+## [5.12.2] - 2026-11-14
+
+### Changed
+
+- Clarified guidance for selecting and reconciling formatters across project and CI configurations, ensuring that the CI formatter is treated as the authoritative source, and refined verification steps to improve fix stability and prevent over-expansion of fixes to unrelated issues. [549f02d2](https://github.com/electrocucaracha/skills/commit/549f02d26f675f40e598676a891312f08ccdb499)
+
+## [5.12.1] - 2026-11-14
+
+### Changed
+
+- Unified the identity helper function definition, removing the duplicate implementation in history.py and importing it from capture.py, with no behavioral changes introduced. [d9106f98](https://github.com/electrocucaracha/skills/commit/d9106f982c21624f8b89cd2d1053e0df6311687f)
+
+## [5.12.0] - 2026-11-14
+
+### Added
+
+- Enabled durable capture records and reconciliation with OpenViking, ensuring every decision is reliably stored and verifiable, and requiring capture before mirroring to maintain accurate audit trails. [cef841a3](https://github.com/electrocucaracha/skills/commit/cef841a3cbf992c6a90b32e2d49618e17a2b2b7e)
+
+## [5.11.0] - 2026-11-11
+
+### Added
+
+- Enabled automated assessment of skill correctness, automated review requests for code changes, and simplified GitHub Actions workflow, while updating plugin and workflow versions to ensure consistency with recent improvements and fixes from dependencies, and introducing codebase consistency enhancements through editor and linter configuration files, refined markdownlint settings, and updated Python script docstrings and documentation. [dbb5ccf5](https://github.com/electrocucaracha/skills/commit/dbb5ccf5256aa5259c1a2af06aeaa6427ea8e427)
+
 ## [5.10.2] - 2026-11-11
 
 ### Changed
