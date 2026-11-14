@@ -25,7 +25,7 @@ fmt:
 	# Keep this aligned with the Prettier version pinned by Super-Linter.
 	npx --yes prettier@3.9.8 . --write --ignore-path .gitignore --use-tabs false --prose-wrap preserve
 	uvx ruff check --fix .
-	uvx black .
+	uvx ruff format .
 
 .PHONY: lint-python
 lint-python:
