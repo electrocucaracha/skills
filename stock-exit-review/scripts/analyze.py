@@ -39,25 +39,19 @@ from pathlib import Path
 import click
 from atomicwrites import atomic_write
 
-# Native dependencies stay lazy so runtime preflight and offline imports work.
-# pylint: disable=import-outside-toplevel
-
 
 def ticker_value(value: str) -> str:
-    """Normalize and validate a provider ticker without allowing path syntax."""
     value = value.upper()
     if not re.fullmatch(r"[A-Z0-9^][A-Z0-9.^=-]{0,31}", value):
         raise click.BadParameter("invalid provider ticker")
     return value
 
 
-def ticker_option(_ctx, _param, value):
-    """Validate a ticker supplied through a Click option callback."""
+def ticker_option(ctx, param, value):
     return ticker_value(value) if value is not None else None
 
 
 def read_json(path: str | Path) -> dict:
-    """Read a bounded UTF-8 JSON object from disk."""
     path = Path(path)
     if path.stat().st_size > 5_000_000:
         raise ValueError("JSON input exceeds 5 MB")
@@ -68,7 +62,6 @@ def read_json(path: str | Path) -> dict:
 
 
 def write_json(path: str | Path, data: dict, *, immutable: bool = False) -> bool:
-    """Write JSON atomically, rejecting conflicts with immutable records."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     payload = json.dumps(data, indent=2, sort_keys=True, allow_nan=False) + "\n"
@@ -83,7 +76,6 @@ def write_json(path: str | Path, data: dict, *, immutable: bool = False) -> bool
 
 
 def load_prices(ticker: str, csv: str | None, as_of: dt.date):
-    """Load and validate adjusted daily prices through the requested date."""
     import numpy as np
     import pandas as pd
 
@@ -131,7 +123,6 @@ def load_prices(ticker: str, csv: str | None, as_of: dt.date):
 
 
 def features(frame) -> dict:
-    """Calculate finite technical indicators from validated daily OHLCV data."""
     from ta.momentum import RSIIndicator
     from ta.trend import MACD, SMAIndicator
     from ta.volatility import AverageTrueRange
@@ -178,10 +169,7 @@ def features(frame) -> dict:
     "--max-age-days", type=click.IntRange(0, 30), default=7, show_default=True
 )
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
-# The callback signature mirrors seven independently validated CLI options.
-# pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
 def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> None:
-    """Capture price features and optional benchmark evidence as JSON."""
     today = dt.datetime.now(dt.UTC).date()
     as_of = as_of.date() if as_of else (today - dt.timedelta(days=1))
     if as_of > today:
@@ -233,8 +221,6 @@ def main(ticker, csv, benchmark, benchmark_csv, as_of, max_age_days, output) -> 
 
 if __name__ == "__main__":
     try:
-        # Click supplies callback arguments; CI cannot infer its missing dependency.
-        # pylint: disable-next=no-value-for-parameter
         main()
-    except (ValueError, KeyError, OSError, ImportError, TypeError) as error:
+    except (ValueError, KeyError, OSError, ImportError) as error:
         raise SystemExit("analysis failed: " + str(error)) from None

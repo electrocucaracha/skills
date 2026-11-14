@@ -92,7 +92,6 @@ QUESTIONS = {
 
 
 def analysis_hash(analysis: dict) -> str:
-    """Hash stable market inputs independently of capture-time metadata."""
     payload = {
         key: value
         for key, value in analysis.items()
@@ -104,7 +103,6 @@ def analysis_hash(analysis: dict) -> str:
 
 
 def market_features(features: dict) -> dict:
-    """Select approved market fields and reject invalid numeric values."""
     selected = {key: features[key] for key in FEATURE_KEYS}
     if not all(
         value is None
@@ -122,11 +120,7 @@ def market_features(features: dict) -> dict:
 Probability = Annotated[float, Field(ge=0, le=1)]
 
 
-# Pydantic models expose data and validators, not a service-method interface.
-# pylint: disable-next=too-few-public-methods
 class ChoiceAnswer(BaseModel):
-    """Validate a categorical answer and its normalized probability distribution."""
-
     model_config = ConfigDict(strict=True, allow_inf_nan=False)
 
     type: Literal["choice"]
@@ -136,7 +130,6 @@ class ChoiceAnswer(BaseModel):
 
     @model_validator(mode="after")
     def check_distribution(self) -> Self:
-        """Require a normalized distribution whose selected choice is maximal."""
         if not math.isclose(sum(self.probabilities.values()), 1, abs_tol=0.001):
             raise ValueError("Jev probabilities do not sum to one")
         if self.choice not in self.probabilities or (
@@ -146,11 +139,7 @@ class ChoiceAnswer(BaseModel):
         return self
 
 
-# Pydantic models expose data and validators, not a service-method interface.
-# pylint: disable-next=too-few-public-methods
 class JevResponse(BaseModel):
-    """Validate the complete set of required market answers."""
-
     model_config = ConfigDict(strict=True)
 
     model: Annotated[str, Field(min_length=1, max_length=128)]
@@ -158,7 +147,6 @@ class JevResponse(BaseModel):
 
     @model_validator(mode="after")
     def check_questions(self) -> Self:
-        """Require exactly the configured questions and answer options."""
         if set(self.answers) != set(QUESTIONS):
             raise ValueError("invalid Jev answer schema")
         for name, answer in self.answers.items():
@@ -168,7 +156,6 @@ class JevResponse(BaseModel):
 
 
 def query_jev(state: dict, model: str, token: str) -> dict:
-    """Request and validate bounded Jev answers over authenticated TLS."""
     body = json.dumps(
         {"state": state, "model": model, "questions": QUESTIONS}, allow_nan=False
     ).encode()
@@ -197,7 +184,6 @@ def query_jev(state: dict, model: str, token: str) -> dict:
 
 
 def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
-    """Apply the conservative policy to validated market classifications."""
     if any(answer["confidence"] < minimum for answer in answers.values()):
         return "insufficient_evidence", ["low Jev classification confidence"]
     trend, risk = answers["trend"]["choice"], answers["risk"]["choice"]
@@ -209,6 +195,68 @@ def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
     if trend == "improving" and risk == "ordinary" and downside == "not_downside":
         return "hold", ["improving trend and ordinary risk evidence"]
     return "insufficient_evidence", ["signals conflict; human review required"]
+
+
+def build_summary(result: dict) -> dict:
+    """Presentation-only TL;DR + justification, computed from the already-decided
+    assessment/answers/forecast. Never alters the decision, its verdict, or its hash."""
+    verdict_map = {
+        "hold": "HOLD",
+        "review_exit": "SELL",
+        "insufficient_evidence": "NO_DECISION",
+    }
+    verdict = verdict_map.get(result.get("assessment"), "NO_DECISION")
+    answers = result.get("answers") or {}
+    key_signals = {
+        q: {"choice": a["choice"], "confidence": a["confidence"]}
+        for q, a in answers.items()
+        if q in ("trend", "risk", "downside") and a
+    }
+    policy = result.get("policy", {})
+    floor = policy.get("min_confidence", 0.6)
+    thr = policy.get("downside_threshold", -0.05)
+    hor = policy.get("horizon_sessions", 20)
+    just = []
+    if verdict == "HOLD":
+        just.append(
+            "Improving trend with ordinary risk and no forecast terminal "
+            "downside \u2014 evidence supports continuing to hold."
+        )
+    elif verdict == "SELL":
+        just.append(
+            "Deteriorating trend, elevated risk, and a forecast terminal "
+            "downside all agree \u2014 evidence supports reviewing the exit / "
+            "reducing the position."
+        )
+    else:
+        just.append(
+            "Abstain: "
+            + "; ".join(result.get("reasons") or ["signals inconclusive"])
+            + f". No confident signal meets the {floor:.2f} floor \u2014 do not "
+            "trade on this review."
+        )
+    fc = result.get("forecast")
+    if fc:
+        just.append(
+            f"Forecast P(adjusted return <= {thr:.0%} within {hor} sessions) "
+            f"= {fc['probability']:.0%} (conditional on classifiable)."
+        )
+    lines = {
+        "HOLD": f"HOLD {result['ticker']} \u2014 improving trend, ordinary risk, no "
+        f"downside signal.",
+        "SELL": f"SELL / REVIEW EXIT {result['ticker']} \u2014 weak trend, elevated risk, "
+        f"downside forecast agree.",
+        "NO_DECISION": f"NO ACTION on {result['ticker']} \u2014 insufficient evidence; "
+        f"abstain, do not trade.",
+    }
+    return {
+        "verdict": verdict,
+        "tl_dr": lines[verdict],
+        "justification": just,
+        "key_signals": key_signals,
+        "model": result.get("model") or result.get("requested_model"),
+        "as_of": result.get("as_of"),
+    }
 
 
 @click.command(help=__doc__)
@@ -231,8 +279,6 @@ def assessment(answers: dict, minimum: float) -> tuple[str, list[str]]:
 )
 @click.option("--model", envvar="JEV_MODEL", default="jev-latest", show_default=True)
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
-# The callback mirrors CLI options; state, policy, and result share one audit boundary.
-# pylint: disable-next=too-many-arguments,too-many-positional-arguments,too-many-locals
 def main(
     analysis_path,
     context_path,
@@ -242,7 +288,6 @@ def main(
     model,
     output,
 ) -> None:
-    """Request market classifications and persist a conservative assessment."""
     analysis = read_json(analysis_path)
     ticker_value(analysis["ticker"])
     as_of = dt.date.fromisoformat(analysis["as_of"])
@@ -326,13 +371,12 @@ def main(
             result["reasons"] = [
                 "Jev unavailable or invalid response; no automatic retry"
             ]
+    result["summary"] = build_summary(result)
     write_json(output, result)
 
 
 if __name__ == "__main__":
     try:
-        # Click supplies callback arguments; CI cannot infer its missing dependency.
-        # pylint: disable-next=no-value-for-parameter
         main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit(

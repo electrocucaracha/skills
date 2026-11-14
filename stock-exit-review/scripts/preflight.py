@@ -10,7 +10,6 @@ from pathlib import Path
 
 
 def check_runtime(run_dir: Path, history_root: Path, timeout: int) -> dict:
-    """Probe writable external paths and dependency imports within a timeout."""
     skill_dir = Path(__file__).resolve().parent.parent
     for path in (run_dir, history_root):
         if not path.is_absolute():
@@ -21,8 +20,8 @@ def check_runtime(run_dir: Path, history_root: Path, timeout: int) -> dict:
         with tempfile.TemporaryFile(dir=path) as handle:
             handle.write(b"stock-exit-review preflight\n")
             handle.flush()
-    uv_path = shutil.which("uv")
-    if not uv_path:
+    uv = shutil.which("uv")
+    if not uv:
         return {
             "status": "blocked",
             "reason": "uv_missing",
@@ -37,7 +36,7 @@ def check_runtime(run_dir: Path, history_root: Path, timeout: int) -> dict:
                 "\n".join(line.removeprefix("# ") for line in metadata.splitlines())
             )["dependencies"]
         )
-    command = [uv_path, "--no-progress", "run", "--no-project", "--python", ">=3.12"]
+    command = [uv, "--no-progress", "run", "--no-project", "--python", ">=3.12"]
     for dependency in sorted(dependencies):
         command.extend(["--with", dependency])
     command.extend(
@@ -63,8 +62,9 @@ def check_runtime(run_dir: Path, history_root: Path, timeout: int) -> dict:
             "action": "Provision the runtime outside the scheduled review, then retry.",
         }
     if result.returncode:
+        diagnostic = result.stderr.decode("utf-8", errors="replace").lower()
         native_failure = any(
-            text in result.stderr.decode("utf-8", errors="replace").lower()
+            text in diagnostic
             for text in (
                 "failed to map segment",
                 "permission denied",
@@ -88,7 +88,6 @@ def check_runtime(run_dir: Path, history_root: Path, timeout: int) -> dict:
 
 
 def main(argv=None) -> int:
-    """Run bounded preflight checks and print a machine-readable status."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--history-root", type=Path, required=True)

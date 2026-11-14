@@ -40,7 +40,6 @@ from decide import analysis_hash
 
 
 def identity(analysis: dict, decision: dict) -> str:
-    """Derive a stable record identifier from market and policy identity."""
     key = [
         analysis["ticker"],
         analysis["as_of"],
@@ -51,7 +50,6 @@ def identity(analysis: dict, decision: dict) -> str:
 
 
 def record(root: Path, analysis: dict, decision: dict) -> dict:
-    """Save an immutable observation after verifying its input identity."""
     ticker = ticker_value(analysis["ticker"])
     if decision["ticker"] != ticker or decision["as_of"] != analysis["as_of"]:
         raise ValueError("analysis and decision identity mismatch")
@@ -82,7 +80,6 @@ def record(root: Path, analysis: dict, decision: dict) -> dict:
 
 
 def prices(series: list[dict]) -> dict[str, float]:
-    """Validate and index an ascending series of positive adjusted closes."""
     result = {}
     for item in series:
         date = dt.date.fromisoformat(item["date"]).isoformat()
@@ -99,10 +96,7 @@ def prices(series: list[dict]) -> dict[str, float]:
     return result
 
 
-# Eligibility gates and benchmark evidence must be evaluated against the same snapshot.
-# pylint: disable-next=too-many-locals,too-many-return-statements
 def evaluate_one(observation: dict, latest: dict) -> dict | None:
-    """Score a matured forecast only when source history remains comparable."""
     analysis, decision = observation["analysis"], observation["decision"]
     forecast = decision["forecast"]
     if forecast is None:
@@ -174,7 +168,6 @@ def evaluate_one(observation: dict, latest: dict) -> dict | None:
 
 
 def evaluate(root: Path, latest: dict) -> dict:
-    """Persist eligible outcomes while deferring revised or changed history."""
     ticker = ticker_value(latest["ticker"])
     updates, pending = [], []
     if latest["data_quality"]["usable"] is not True:
@@ -203,7 +196,6 @@ def evaluate(root: Path, latest: dict) -> dict:
 
 
 def context(root: Path, ticker: str) -> dict:
-    """Export recent observations and evaluation scores grouped by policy/model."""
     observations = []
     for path in (root / ticker / "observations").glob("*.json"):
         observation = read_json(path)
@@ -220,7 +212,7 @@ def context(root: Path, ticker: str) -> dict:
             }
         )
     observations.sort(key=lambda item: (item["as_of"], item["id"]))
-    groups: dict[str, list[float]] = {}
+    groups = {}
     for path in (root / ticker / "evaluations").glob("*.json"):
         outcome = read_json(path)
         if outcome["status"] != "evaluated":
@@ -246,7 +238,6 @@ def context(root: Path, ticker: str) -> dict:
 @click.option("--root", type=click.Path(file_okay=False, path_type=Path), required=True)
 @click.pass_context
 def main(ctx, root) -> None:
-    """Resolve the external history root for subsequent subcommands."""
     ctx.obj = root.expanduser().resolve()
 
 
@@ -255,7 +246,6 @@ def main(ctx, root) -> None:
 @click.option("--decision", type=click.Path(exists=True, dir_okay=False), required=True)
 @click.pass_obj
 def record_command(root, analysis, decision) -> None:
-    """Record an immutable analysis and decision pair."""
     result = record(root, read_json(analysis), read_json(decision))
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
 
@@ -266,7 +256,6 @@ def record_command(root, analysis, decision) -> None:
 @click.option("--analysis", type=click.Path(exists=True, dir_okay=False), required=True)
 @click.pass_obj
 def evaluate_command(root, analysis) -> None:
-    """Evaluate matured observations using the supplied latest market data."""
     result = evaluate(root, read_json(analysis))
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
 
@@ -278,7 +267,6 @@ def evaluate_command(root, analysis) -> None:
 @click.option("--output", type=click.Path(dir_okay=False), required=True)
 @click.pass_obj
 def context_command(root, ticker, output) -> None:
-    """Write recent historical context for a validated ticker."""
     result = context(root, ticker)
     write_json(output, result)
     click.echo(json.dumps(result, sort_keys=True, allow_nan=False))
@@ -286,8 +274,6 @@ def context_command(root, ticker, output) -> None:
 
 if __name__ == "__main__":
     try:
-        # Click supplies callback arguments; CI cannot infer its missing dependency.
-        # pylint: disable-next=no-value-for-parameter
         main()
     except (ValueError, KeyError, OSError, TypeError) as error:
         raise SystemExit("history failed: " + str(error)) from None
