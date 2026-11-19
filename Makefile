@@ -24,9 +24,9 @@ fmt:
 	yamlfmt -dstar -gitignore_excludes '**/*.{yaml,yml}'
 	# Keep this aligned with the Prettier version pinned by Super-Linter.
 	npx --yes prettier@3.9.8 . --write --ignore-path .gitignore --use-tabs false --prose-wrap preserve
-	uvx black .
 	uvx ruff check --fix .
 	uvx ruff format .
+	uvx black .
 
 .PHONY: lint-python
 lint-python:

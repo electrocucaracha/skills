@@ -221,7 +221,8 @@ class WorkflowChecks(unittest.TestCase):
         """Check Jev transport settings and response validation."""
         response = {"model": "offline-fixture", "answers": self.answers}
         with patch("decide.httpx.Client") as client:
-            handle = client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value
+            stream = client.return_value.__enter__.return_value.stream
+            handle = stream.return_value.__enter__.return_value
             handle.iter_bytes.return_value = [json.dumps(response).encode()]
             self.assertEqual(
                 decide.query_jev({}, "fixture", "offline-placeholder"), response
