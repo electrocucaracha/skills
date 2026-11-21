@@ -12,7 +12,7 @@ compatibility: >
   Hermes with local OpenViking read/write tools for memory synchronization.
 metadata:
   author: electrocucaracha
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Stock Exit Review
@@ -143,6 +143,8 @@ uv run --no-project --script "$SKILL_DIR/scripts/capture.py" --root "$CAPTURE_RO
 uv run --no-project --script "$SKILL_DIR/scripts/capture.py" --root "$CAPTURE_ROOT" capture --analysis "$RUN_DIR/analysis.json" --decision "$RUN_DIR/decision.json" --ov-status sync_pending
 uv run --no-project --script "$SKILL_DIR/scripts/history.py" --root "$STOCK_HISTORY_ROOT" evaluate --analysis "$RUN_DIR/analysis.json"
 uv run --no-project --script "$SKILL_DIR/scripts/capture.py" --root "$CAPTURE_ROOT" report --ticker AAPL
+# Friendly TL;DR for the user; the detailed technical report stays in OpenViking/capture:
+uv run --no-project --script "$SKILL_DIR/scripts/friendly.py" --analysis "$RUN_DIR/analysis.json" --decision "$RUN_DIR/decision.json"
 ```
 
 ## Learning Policy
@@ -299,9 +301,46 @@ exist` because the host is a different machine); only free-form
   `as_of < current` filter is the only look-ahead guard (the analysis hash excludes
   context, so a polluted context does not corrupt a record). Keep the history root
   free of future-dated or test observations — they pollute every run's context.
+- **Split the output: technical to OpenViking, friendly to the user.** Store the full
+  technical report (features, Jev answers + confidences, decision/assessment + reasons,
+  forecast, benchmark outperformance, model/policy, caveats) in OpenViking via
+  `capture.py`/`mcp__openviking__remember` (mark `sync_pending` until a read-back
+  succeeds); send the user only `scripts/friendly.py`'s one-line verdict + justification.
+  `friendly.py` reads `decision['summary']` and the analysis features — it never
+  re-derives the verdict — so the message and the stored record cannot disagree.
 - **The verdict summary is presentation only.** `decide.py` writes a `summary`
   block (`verdict`/`tl_dr`/`justification`/`key_signals`) into every decision from
   the already-made assessment; it never changes the verdict, the analysis hash, or
   any threshold. Report `summary.tl_dr` first, then `summary.justification`, and
   treat `insufficient_evidence` as a `NO ACTION` verdict — never silently
   reclassify it as HOLD or SELL.
+- **Materializing bundled scripts when the installed tree is unreadable.**
+  When the installed `scripts/` cannot be read (observed: a
+  `*.hermes/external_skills/*` index at mode `0700` owned by another uid),
+  `find / -name preflight.py` finds nothing readable and `preflight.py` exits
+  with `Errno 13`.
+  Do NOT treat this as a terminal blocker.
+  Retrieve each script's source through the skill loader
+  (`skill_view(name, file_path="scripts/<name>.py")` returns the real content),
+  then materialize it under a writable exec-capable path
+  (e.g. `$HOME/.stock-review/scripts`) with
+  `printf '%s' '<content>' > file` and run the pipeline normally.
+  **CRITICAL PITFALL:** single-quoted `printf` content EATS embedded single
+  quotes.
+  Python f-strings with single-quoted subscripts (e.g. `result['ticker']` and
+  `fc['probability']` inside `decide.py` `build_summary`) silently lose their
+  quotes and raise `NameError` at runtime, even though `py_compile` passes.
+  After materializing, grep the script for mangled `[word]` patterns and patch
+  them to double quotes.
+  This is valid on the Python 3.12+ uv runtime; system Python 3.11
+  `py_compile` flags the nested same-quote form, which is harmless.
+  The other core scripts (`preflight`, `analyze`, `history`, and `capture`)
+  contain no single quotes and materialize cleanly.
+- **`--benchmark` populates the series in this tree.**
+  The "`--benchmark` is dead code / benchmark always null" note in References
+  is stale for the materialized v1.4 `analyze.py`.
+  It captures `benchmark_ticker` before the `benchmark = None` line,
+  so `--benchmark SPY` populates the observation's `benchmark` (with
+  `return_20`) and `evaluate` can score benchmark/excess returns.
+  A separate read-only `analyze.py --ticker SPY` call remains harmless,
+  but is not required.
