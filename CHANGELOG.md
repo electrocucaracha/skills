@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.1] - 2026-11-21
+
+### Changed
+
+- Updated plugin versions and workflow dependencies to ensure consistency and compatibility across plugins and GitHub tools. [2c85d182](https://github.com/electrocucaracha/skills/commit/2c85d182142a9a83754bbe970d569e9ce1887454)
+
+## [6.1.0] - 2026-11-21
+
+### Added
+
+- Introduced a presentation-focused script that emits a concise, user-facing summary and rationale for stock-exit decisions, providing a one-line verdict and justification without re-deriving results, and updated SKILL.md to version 1.5 with guidelines for script materialization and improved output separation. [1a03ee10](https://github.com/electrocucaracha/skills/commit/1a03ee1037e982f071c292daeedae78a22cdf732)
+
+## [6.0.3] - 2026-11-18
+
+### Fixed
+
+- Resolved the inconsistent application of lint fixes and formatting by reordering the code formatting tools in the `fmt` target, and also clarified the patching flow in a test patch. [6adf9278](https://github.com/electrocucaracha/skills/commit/6adf9278bff0e12561cbeee71cb39fffe5fa1af2)
+
+## [6.0.2] - 2026-11-14
+
+### Changed
+
+- Improved code maintainability and enforced consistent style practices by updating the CHANGELOG.md format and modifying the Makefile to run 'ruff format' after code checks. [2af8924a](https://github.com/electrocucaracha/skills/commit/2af8924ac0d0d26723cea4ed1ef3a5705f415435)
+
+## [6.0.1] - 2026-11-14
+
+### Changed
+
+- Updated plugin and workflow versions to 6.0.0 and v13.4.4 to ensure compatibility with recent enhancements and fixes, with no functional changes to plugin code. [4c163645](https://github.com/electrocucaracha/skills/commit/4c16364510757c6312d350053850f948e2536cee)
+
 ## [6.0.0] - 2026-11-14
 
 ### Removed

@@ -1,7 +1,7 @@
 {
   "name": "fix-gh-lint-issue",
   "description": "Resolve shared Super-Linter workflow failures",
-  "version": "6.0.1",
+  "version": "6.1.1",
   "author": {
     "name": "electrocucaracha"
   },
