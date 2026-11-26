@@ -72,7 +72,7 @@ Preserve established paths when moving a file would break callers or links.
 Use relative paths with forward slashes in skill instructions,
 regardless of the host operating system.
 
-Do not add human-facing README, changelog, or installation documents
+Do not add human-facing readme, changelog, or installation documents
 to a skill unless the user or repository specifically needs them.
 Do not duplicate instructions the agent can already follow reliably.
 
