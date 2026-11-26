@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.2] - 2026-11-25
+
+### Changed
+
+- Enabled CI to validate skill evaluation file structure, ensuring conformity to a specific JSON structure without evaluating model behavior. [5e2ebc62](https://github.com/electrocucaracha/skills/commit/5e2ebc62d1316ad02e60346e49715d6475ffe0e8)
+
+## [6.2.1] - 2026-11-25
+
+### Changed
+
+- clarified documentation to refer to "readme" in lowercase, maintaining consistency with repository naming conventions and improving documentation clarity. [298e2107](https://github.com/electrocucaracha/skills/commit/298e2107397979dc0c64c9da67978055fe82ecc8)
+
+## [6.2.0] - 2026-11-25
+
+### Added
+
+- Enabled skills to correctly limit responses to documented functionality and decline out-of-scope requests, thereby enhancing coverage of skill boundary recognition and improving resilience to ambiguous or misdirected prompts. [b0336b6b](https://github.com/electrocucaracha/skills/commit/b0336b6b75ec8f3ac9290ad0ea0f33d02c015990)
+
+## [6.1.3] - 2026-11-25
+
+### Changed
+
+- Clarified and standardized skill authoring best practices to ensure clear, maintainable, and reliable skill definitions, including guidelines for SKILL.md files, supporting files, procedural style, scripting, and skill evaluation. [beafb852](https://github.com/electrocucaracha/skills/commit/beafb8521627d830eca7e7cb9a7869be6828e10b)
+
+## [6.1.2] - 2026-11-21
+
+### Changed
+
+- Updated plugin versions for technical-writer and fix-gh-lint-issue to 6.1.1 for consistency, with no observable impact or migration requirements. [aa31921d](https://github.com/electrocucaracha/skills/commit/aa31921df38a9523f8ce6bc048732fc5e97986df)
+
 ## [6.1.1] - 2026-11-21
 
 ### Changed
