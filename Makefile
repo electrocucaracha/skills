@@ -31,3 +31,7 @@ fmt:
 .PHONY: lint-python
 lint-python:
 	git ls-files --cached --others --exclude-standard -z -- '*.py' | xargs -0 uvx pylint --rcfile=.python-lint
+
+.PHONY: lint-evals
+lint-evals:
+	python3 scripts/validate_evals.py

@@ -128,8 +128,10 @@ Run the scripts directly;
 their inline metadata lets uv resolve Python and dependencies automatically.
 Because the scripts exchange JSON through `$RUN_DIR`, run all five in one shell
 invocation (or write intermediates to a store that survives across calls); in
-ephemeral per-call containers `$RUN_DIR` and the history root are transient, so
-the OpenViking mirror—not the local JSON—is the durable record.
+ephemeral per-call containers `$RUN_DIR` is transient.
+Keep `STOCK_HISTORY_ROOT` and `CAPTURE_ROOT` on persistent storage.
+The capture and manifest under `CAPTURE_ROOT` are authoritative;
+OpenViking is a reconciled mirror.
 
 ```bash
 set -eu
@@ -227,13 +229,8 @@ follow [Runtime Workflow](references/workflow.md#offline-check).
   systematic `insufficient_evidence` abstention on technical-only data.
 - The five scripts pass JSON through `$RUN_DIR`, so they must see it at once:
   run `analyze → context → decide → record → evaluate` in a single shell invocation.
-  In ephemeral per-call containers `$RUN_DIR` and the history root are transient,
-  so the OpenViking mirror is the durable record, not the local JSON.
-- `--benchmark` in `analyze.py` is currently dead code: a `benchmark = None` line
-  clobbers the CLI argument before the fetch branch runs, so the observation's
-  `benchmark` field is always null. Fetch the benchmark with a separate read-only
-  `analyze.py --ticker <BENCH>` call and attach its trailing return to the
-  explanation until the script is fixed.
+  Keep the history and capture roots persistent;
+  do not treat transient files in `$RUN_DIR` as durable.
 - When the sandbox blocks the credentialed Jev POST (no interactive consent),
   run `decide.py` with `TYPESAFE_API_KEY` unset so it records the missing-credential
   `insufficient_evidence` abstention rather than aborting the pipeline; do not
@@ -336,11 +333,3 @@ exist` because the host is a different machine); only free-form
   `py_compile` flags the nested same-quote form, which is harmless.
   The other core scripts (`preflight`, `analyze`, `history`, and `capture`)
   contain no single quotes and materialize cleanly.
-- **`--benchmark` populates the series in this tree.**
-  The "`--benchmark` is dead code / benchmark always null" note in References
-  is stale for the materialized v1.4 `analyze.py`.
-  It captures `benchmark_ticker` before the `benchmark = None` line,
-  so `--benchmark SPY` populates the observation's `benchmark` (with
-  `return_20`) and `evaluate` can score benchmark/excess returns.
-  A separate read-only `analyze.py --ticker SPY` call remains harmless,
-  but is not required.

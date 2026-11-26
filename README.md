@@ -24,7 +24,10 @@ In practice, this leads to faster delivery, fewer avoidable mistakes, and more p
 ## Local Checks
 
 Run `make fmt` to format the repository,
-then `make lint-python` to run Pylint with the Super-Linter configuration.
+then `make lint-evals` to validate skill evaluation files
+and `make lint-python` to run Pylint with the Super-Linter configuration.
+`lint-evals` checks the JSON structure and required fields;
+it does not execute model behavior evaluations.
 The [CI config](.python-lint) is a symlink to the [local config](.pylintrc),
 so both use the same rules.
 

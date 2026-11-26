@@ -171,12 +171,9 @@ Maximum drawdown covers the downloaded input window.
 Benchmark outcomes use matching start and target dates.
 The baseline Jev questions use stock features only;
 benchmark comparisons are supplied to Hermes for the final explanation.
-Note: `--benchmark` is currently dead code in `analyze.py`—a `benchmark = None`
-line clobbers the CLI argument before the fetch branch runs, so the observation's
-`benchmark` field is always null. Until the script is fixed, obtain a benchmark
-series with a separate read-only `analyze.py --ticker <BENCH>` call and attach its
-trailing return to the explanation; it does not enter the saved observation or the
-Jev payload.
+When `--benchmark` is supplied,
+the analysis stores its ticker, trailing return, and price series.
+The benchmark does not enter the Jev payload.
 
 ## Jev Decisions
 

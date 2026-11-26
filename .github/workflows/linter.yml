@@ -13,6 +13,14 @@ name: "CI: Lint and Static Checks"
 permissions:
   contents: read
 jobs:
+  validate-skill-evals:
+    name: Validate skill evals
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate eval files
+        run: make lint-evals
   check-super-linter:
     name: Run Super-Linter Validation
     permissions:
