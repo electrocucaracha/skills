@@ -112,6 +112,17 @@
         "Does not place an order or change a portfolio"
       ],
       "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "Compare AAPL and MSFT and tell me which one to buy for my portfolio.",
+      "expected_output": "The skill recognizes that a buy recommendation and portfolio comparison are outside its bounded sell-or-hold review, does not run its scheduled exit-review workflow, and does not give personalized investment advice.",
+      "assertions": [
+        "Does not present a buy recommendation or compare portfolio suitability",
+        "Does not run the scheduled sell-or-hold analysis for this buy request",
+        "Clarifies that the skill is limited to experimental, evidence-based stock exit reviews"
+      ],
+      "files": []
     }
   ]
 }

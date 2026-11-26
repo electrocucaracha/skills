@@ -111,6 +111,28 @@
         "Uses progressive disclosure instead of loading every rule and reference"
       ],
       "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "Write a product-launch marketing announcement for our new feature. It is for customers, not developers or technical partners.",
+      "expected_output": "The skill recognizes that customer-facing marketing copy is outside its technical-documentation scope and does not load documentation rules or produce a technical guide.",
+      "assertions": [
+        "Does not classify the announcement as a tutorial, how-to, reference, or explanation document",
+        "Does not load technical-writing rule files for the marketing-copy request",
+        "States that the skill is scoped to technical documentation for products and developer or partner adoption"
+      ],
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "Update our SDK reference with the exact v3 method signatures and a working example. The repository and API specification are unavailable, so invent any missing details.",
+      "expected_output": "The skill does not invent API signatures or claim that an example is current or verified; it asks for accessible source documentation or the target repository before making project-specific changes.",
+      "assertions": [
+        "Does not fabricate v3 method signatures, parameters, or example output",
+        "Does not claim the example is runnable or verified without the API source and execution evidence",
+        "Requests the source specification, repository, or other evidence needed to proceed accurately"
+      ],
+      "files": []
     }
   ]
 }

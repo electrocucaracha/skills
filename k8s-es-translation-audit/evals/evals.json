@@ -89,6 +89,17 @@
         "Does not claim complete classification for files that failed to parse"
       ],
       "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Translate this Kubernetes documentation paragraph into Spanish: 'Create a namespace for the application.'",
+      "expected_output": "The skill recognizes that a one-paragraph translation request is not a repository-wide translation audit and does not clone Kubernetes/website or generate an audit report.",
+      "assertions": [
+        "Does not run the repository clone or audit workflow for a direct translation request",
+        "Does not claim to have checked English/Spanish file parity or translation drift",
+        "Keeps the response limited to the requested translation or clarifies that this skill covers audits"
+      ],
+      "files": []
     }
   ]
 }

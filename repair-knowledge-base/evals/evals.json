@@ -90,6 +90,17 @@
         "Does not create an L2 or L3 node without evidence supporting that abstraction"
       ],
       "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Create a general product onboarding FAQ. There is no completed code repair to capture and no prior repair guidance to retrieve.",
+      "expected_output": "The skill recognizes that general product documentation is outside the repair knowledge-base workflow and does not create repair trajectories or nodes.",
+      "assertions": [
+        "Does not create `.repair-kb/trajectories/` or repair nodes for a general onboarding FAQ",
+        "Does not run repair retrieval commands without a repair symptom or repair-planning request",
+        "Identifies that this skill is for capturing or reusing completed software repairs"
+      ],
+      "files": []
     }
   ]
 }

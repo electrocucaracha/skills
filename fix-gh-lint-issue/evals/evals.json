@@ -127,6 +127,17 @@
         "Reruns Pylint after the formatter to catch relocated or ineffective pragmas"
       ],
       "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "Run `make fmt` on my working tree. There is no Super-Linter issue or failed CI report.",
+      "expected_output": "The skill recognizes this as a routine formatting request, not a Super-Linter issue investigation, and does not search GitHub for an issue or require an issue commit SHA.",
+      "assertions": [
+        "Does not run `gh issue list` or `gh issue view` to find a Super-Linter issue",
+        "Does not apply the issue workflow's reported-commit comparison gate",
+        "Does not claim that a Super-Linter failure was reproduced"
+      ],
+      "files": []
     }
   ]
 }
